@@ -8,6 +8,14 @@ import hudson.model.AbstractProject;
 import hudson.tasks.Builder;
 import hudson.tasks.BuildStepDescriptor;
 import net.sf.json.JSONObject;
+
+import org.drools.KnowledgeBase;
+import org.drools.KnowledgeBaseFactory;
+import org.drools.builder.KnowledgeBuilder;
+import org.drools.builder.KnowledgeBuilderFactory;
+import org.drools.builder.ResourceType;
+import org.drools.io.ResourceFactory;
+import org.drools.runtime.StatefulKnowledgeSession;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.QueryParameter;
@@ -21,7 +29,7 @@ import java.io.IOException;
  * <p>
  * When the user configures the project and enables this builder,
  * {@link DescriptorImpl#newInstance(StaplerRequest)} is invoked
- * and a new {@link HelloWorldBuilder} is created. The created
+ * and a new {@link JbpmUrlResourceBuilder} is created. The created
  * instance is persisted to the project configuration XML by using
  * XStream, so this allows you to use instance fields (like {@link #name})
  * to remember the configuration.
@@ -32,21 +40,27 @@ import java.io.IOException;
  *
  * @author Kohsuke Kawaguchi
  */
-public class HelloWorldBuilder extends Builder {
+public class JbpmUrlResourceBuilder extends Builder {
 
-    private final String name;
+    private final String url;
+    private final String processId;
 
     // Fields in config.jelly must match the parameter names in the "DataBoundConstructor"
     @DataBoundConstructor
-    public HelloWorldBuilder(String name) {
-        this.name = name;
+    public JbpmUrlResourceBuilder(String url, String processId) {
+        this.url = url;
+        this.processId = processId;
     }
 
     /**
      * We'll use this from the <tt>config.jelly</tt>.
      */
-    public String getName() {
-        return name;
+    public String getUrl() {
+        return url;
+    }
+    
+    public String getProcessId() {
+    	return processId;
     }
 
     @Override
@@ -56,9 +70,23 @@ public class HelloWorldBuilder extends Builder {
 
         // This also shows how you can consult the global configuration of the builder
         if (getDescriptor().useFrench())
-            listener.getLogger().println("Bonjour, "+name+"!");
+            listener.getLogger().println("Bonjour, "+url+"!");
         else
-            listener.getLogger().println("Hello, "+name+"!");
+            listener.getLogger().println("Hello, "+url+"!");
+        
+        listener.getLogger().println("processId: " + processId);
+        
+        KnowledgeBuilder kbuilder = KnowledgeBuilderFactory.newKnowledgeBuilder();
+        kbuilder.add(ResourceFactory.newUrlResource(url), ResourceType.BPMN2);
+        
+        listener.getLogger().println(kbuilder.getErrors());
+        
+        KnowledgeBase kbase = KnowledgeBaseFactory.newKnowledgeBase();
+        kbase.addKnowledgePackages(kbuilder.getKnowledgePackages());
+        
+        StatefulKnowledgeSession ksession = kbase.newStatefulKnowledgeSession();
+        ksession.startProcess("test");
+        
         return true;
     }
 
@@ -71,7 +99,7 @@ public class HelloWorldBuilder extends Builder {
     }
 
     /**
-     * Descriptor for {@link HelloWorldBuilder}. Used as a singleton.
+     * Descriptor for {@link JbpmUrlResourceBuilder}. Used as a singleton.
      * The class is marked as public so that it can be accessed from views.
      *
      * <p>
@@ -88,7 +116,9 @@ public class HelloWorldBuilder extends Builder {
          * If you don't want fields to be persisted, use <tt>transient</tt>.
          */
         private boolean useFrench;
-
+        
+        //private String processFileName;
+        
         /**
          * Performs on-the-fly validation of the form field 'name'.
          *
@@ -115,7 +145,7 @@ public class HelloWorldBuilder extends Builder {
          * This human readable name is used in the configuration screen.
          */
         public String getDisplayName() {
-            return "Say hello world";
+            return "Invoke a BPMN 2.0 business process";
         }
 
         @Override
@@ -125,6 +155,8 @@ public class HelloWorldBuilder extends Builder {
             useFrench = formData.getBoolean("useFrench");
             // ^Can also use req.bindJSON(this, formData);
             //  (easier when there are many fields; need set* methods for this, like setUseFrench)
+            
+            //processFileName = formData.getString("processFileName");
             save();
             return super.configure(req,formData);
         }
@@ -135,6 +167,12 @@ public class HelloWorldBuilder extends Builder {
         public boolean useFrench() {
             return useFrench;
         }
+        
+        /*
+        public String getProcessFileName() {
+        	return processFileName;
+        }
+        */
     }
 }
 

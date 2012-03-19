@@ -20,3 +20,6 @@ bin/
 # Test info
 /settings*.xml
 /lib-jdbc/
+
+# jenkins hpi plugin workspace directory for debugging with hpi:run
+/work
