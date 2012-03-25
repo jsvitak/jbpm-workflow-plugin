@@ -1,0 +1,9 @@
+[
+
+  [
+    "name" : "JenkinsJob",
+    "displayName" : "jenkins-job",
+    "icon" : "icons/jenkins.ico",
+  ]
+     
+]
