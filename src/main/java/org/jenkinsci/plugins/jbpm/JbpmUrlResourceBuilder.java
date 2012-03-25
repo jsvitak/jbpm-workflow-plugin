@@ -1,4 +1,4 @@
-package hudson.plugins.jbpm;
+package org.jenkinsci.plugins.jbpm;
 import hudson.Launcher;
 import hudson.Extension;
 import hudson.util.FormValidation;
@@ -85,7 +85,10 @@ public class JbpmUrlResourceBuilder extends Builder {
         kbase.addKnowledgePackages(kbuilder.getKnowledgePackages());
         
         StatefulKnowledgeSession ksession = kbase.newStatefulKnowledgeSession();
-        ksession.startProcess("test");
+        ksession.getWorkItemManager().registerWorkItemHandler(
+        	    "Launch", new JenkinsJobWorkItemHandler());
+
+        ksession.startProcess(processId);
         
         return true;
     }
