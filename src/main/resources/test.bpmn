@@ -18,11 +18,20 @@
     <startEvent id="_1" name="Start" />
     <task id="_2" name="hello-job" tns:taskName="JenkinsJob" >
       <ioSpecification>
+        <dataInput id="_2_JobNameToLaunchInput" name="JobNameToLaunch" />
         <inputSet>
+          <dataInputRefs>_2_JobNameToLaunchInput</dataInputRefs>
         </inputSet>
         <outputSet>
         </outputSet>
       </ioSpecification>
+      <dataInputAssociation>
+        <targetRef>_2_JobNameToLaunchInput</targetRef>
+        <assignment>
+          <from xsi:type="tFormalExpression">hello-job</from>
+          <to xsi:type="tFormalExpression">_2_JobNameToLaunchInput</to>
+        </assignment>
+      </dataInputAssociation>
     </task>
     <endEvent id="_3" name="End" >
         <terminateEventDefinition/>

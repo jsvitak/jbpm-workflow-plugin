@@ -1,8 +1,13 @@
+import org.drools.process.core.datatype.impl.type.StringDataType;
+
 [
 
   [
     "name" : "JenkinsJob",
-    "displayName" : "jenkins-job",
+    "displayName" : "Jenkins Job",
+    "parameters" : [
+      "JobNameToLaunch" : new StringDataType(),
+    ],
     "icon" : "icons/jenkins.ico",
   ]
      
