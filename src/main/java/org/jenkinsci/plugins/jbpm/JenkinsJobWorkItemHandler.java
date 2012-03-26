@@ -1,5 +1,7 @@
 package org.jenkinsci.plugins.jbpm;
 
+import hudson.model.Item;
+import hudson.model.TopLevelItem;
 import hudson.model.AbstractProject;
 import hudson.model.Hudson;
 
@@ -21,13 +23,27 @@ public class JenkinsJobWorkItemHandler implements WorkItemHandler {
 	
 		WorkItemCause cause = new WorkItemCause();
 		
-		Future future = Hudson.getInstance().getItemByFullName(itemName, AbstractProject.class).scheduleBuild2(0, cause);
+		System.out.println("itemName: " + itemName);
+		
+		Hudson h = Hudson.getInstance();
+		AbstractProject ap = h.getItemByFullName(itemName, AbstractProject.class);
+		System.out.println("getItemByFullName: " + ap);
+		
+		TopLevelItem ap2 = h.getItem(itemName);
+		System.out.println("getItem: " + ap2);
+		
+		System.out.println("getItemMap" + h.getItemMap());
+		System.out.println("getItems" + h.getItems());
+		
+		/*
+		Future future = ap.scheduleBuild2(0, cause);
 
 		try {
 			future.wait();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+		*/
 		
 	}
 		
