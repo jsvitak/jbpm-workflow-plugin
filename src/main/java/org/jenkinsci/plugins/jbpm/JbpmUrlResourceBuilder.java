@@ -1,4 +1,7 @@
 package org.jenkinsci.plugins.jbpm;
+
+import static org.jenkinsci.plugins.jbpm.JenkinsJobWorkItemHandler.setListener;
+
 import hudson.Launcher;
 import hudson.Extension;
 import hudson.util.FormValidation;
@@ -84,15 +87,17 @@ public class JbpmUrlResourceBuilder extends Builder {
         KnowledgeBase kbase = KnowledgeBaseFactory.newKnowledgeBase();
         kbase.addKnowledgePackages(kbuilder.getKnowledgePackages());
         
+        setListener(listener);
+        
         StatefulKnowledgeSession ksession = kbase.newStatefulKnowledgeSession();
         ksession.getWorkItemManager().registerWorkItemHandler(
         	    "JenkinsJob", new JenkinsJobWorkItemHandler());
-
+        
         ksession.startProcess(processId);
         
         return true;
     }
-
+    
     // Overridden for better type safety.
     // If your plugin doesn't really define any property on Descriptor,
     // you don't have to do this.

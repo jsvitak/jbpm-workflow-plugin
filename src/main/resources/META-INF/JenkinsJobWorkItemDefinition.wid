@@ -1,4 +1,5 @@
 import org.drools.process.core.datatype.impl.type.StringDataType;
+import org.drools.process.core.datatype.impl.type.EnumDataType;
 
 [
 
@@ -7,6 +8,9 @@ import org.drools.process.core.datatype.impl.type.StringDataType;
     "displayName" : "Jenkins Job",
     "parameters" : [
       "JobNameToLaunch" : new StringDataType(),
+    ],
+    "results" : [
+      "Result" : new EnumDataType(),
     ],
     "icon" : "icons/jenkins.ico",
   ]

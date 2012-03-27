@@ -1,10 +1,13 @@
 package org.jenkinsci.plugins.jbpm;
 
-import hudson.model.Item;
+import hudson.model.BuildListener;
+import hudson.model.Result;
 import hudson.model.TopLevelItem;
 import hudson.model.AbstractProject;
 import hudson.model.Hudson;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Future;
 
 import org.drools.runtime.process.WorkItem;
@@ -13,46 +16,57 @@ import org.drools.runtime.process.WorkItemManager;
 
 public class JenkinsJobWorkItemHandler implements WorkItemHandler {
 
-    public void executeWorkItem(WorkItem workItem,
-	    WorkItemManager workItemManager) {
+	private static BuildListener listener;
+	
+	public synchronized static void setListener(BuildListener _listener) {
+		listener = _listener;
+	}
+	
+	public synchronized static BuildListener getListener() {
+		return listener;
+	}
+	
+	public void executeWorkItem(WorkItem workItem,
+			WorkItemManager workItemManager) {
 
-	// ((Run)
-	// hudson.model.Hudson.getInstance().getItem(itemName))).scheduleBuild();
-	// ((AbstractBuild)
-	// (hudson.model.Hudson.getInstance().getItem(itemName))).
+		String jobName = (String) workItem.getParameter("JobNameToLaunch");
+		getListener().getLogger().println("Starting job: " + jobName);
+		
+		WorkItemCause cause = new WorkItemCause();
 
-	String itemName = workItem.getName();
-	String jobName = (String) workItem.getParameter("JobNameToLaunch");
+		System.out.println("jobName: " + jobName);
 
-	WorkItemCause cause = new WorkItemCause();
+		Hudson h = Hudson.getInstance();
+		AbstractProject ap = h
+				.getItemByFullName(jobName, AbstractProject.class);
+		System.out.println("getItemByFullName: " + ap);
 
-	System.out.println("jobName: " + jobName);
+		TopLevelItem ap2 = h.getItem(jobName);
+		System.out.println("getItem: " + ap2);
 
-	Hudson h = Hudson.getInstance();
-	AbstractProject ap = h
-		.getItemByFullName(jobName, AbstractProject.class);
-	System.out.println("getItemByFullName: " + ap);
+		System.out.println("getItemMap" + h.getItemMap());
+		System.out.println("getItems" + h.getItems());
 
-	TopLevelItem ap2 = h.getItem(jobName);
-	System.out.println("getItem: " + ap2);
+		Future future = ap.scheduleBuild2(0, cause);
 
-	System.out.println("getItemMap" + h.getItemMap());
-	System.out.println("getItems" + h.getItems());
-
-	Future future = ap.scheduleBuild2(0, cause);
-
-	synchronized (future) {
-	    try {
-		future.wait();
-	    } catch (InterruptedException e) {
-		e.printStackTrace();
-	    }
+		synchronized (future) {
+			try {
+				future.wait();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		Result result = ap.getBuilds().getLastBuild().getResult();
+		Map<String,Object> results = new HashMap<String,Object> ();
+		results.put("Result", result);
+		
+		workItemManager.completeWorkItem(workItem.getId(), results);
+		getListener().getLogger().println("Completed job: " + jobName);
 	}
 
-    }
+	public void abortWorkItem(WorkItem arg0, WorkItemManager arg1) {
 
-    public void abortWorkItem(WorkItem arg0, WorkItemManager arg1) {
-
-    }
+	}
 
 }

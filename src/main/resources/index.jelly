@@ -2,5 +2,5 @@
   This view is used to render the installed plugins page.
 -->
 <div>
-  This plugin is a sample to explain how to write a Jenkins plugin.
+  This plugin is able to run a BPMN 2.0 business process and use it to create workflow for launching Jenkins jobs.
 </div>
