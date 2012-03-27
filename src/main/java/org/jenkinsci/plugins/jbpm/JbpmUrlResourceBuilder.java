@@ -1,3 +1,22 @@
+/*
+    Copyright 2012 Jiri Svitak 
+  
+    This file is part of jBPM workflow plugin.
+
+    jBPM workflow plugin is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    jBPM workflow plugin is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with jBPM workflow plugin.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 package org.jenkinsci.plugins.jbpm;
 
 import static org.jenkinsci.plugins.jbpm.JenkinsJobWorkItemHandler.setListener;
@@ -27,21 +46,12 @@ import javax.servlet.ServletException;
 import java.io.IOException;
 
 /**
- * Sample {@link Builder}.
+ * 
+ * Implementation of build step which is able to invoke a BPMN 2.0 business process.
+ * Uses jBPM 5.
+ * 
+ * @author Jiri Svitak
  *
- * <p>
- * When the user configures the project and enables this builder,
- * {@link DescriptorImpl#newInstance(StaplerRequest)} is invoked
- * and a new {@link JbpmUrlResourceBuilder} is created. The created
- * instance is persisted to the project configuration XML by using
- * XStream, so this allows you to use instance fields (like {@link #name})
- * to remember the configuration.
- *
- * <p>
- * When a build is performed, the {@link #perform(AbstractBuild, Launcher, BuildListener)}
- * method will be invoked. 
- *
- * @author Kohsuke Kawaguchi
  */
 public class JbpmUrlResourceBuilder extends Builder {
 
