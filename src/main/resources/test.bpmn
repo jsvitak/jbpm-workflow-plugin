@@ -12,10 +12,9 @@
              xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
              xmlns:tns="http://www.jboss.org/drools">
 
-  <process processType="Private" isExecutable="true" id="test" name="test" tns:packageName="defaultPackage" >
+  <process processType="Private" isExecutable="true" id="org.jenkinsci.plugins.jbpm.test" name="org.jenkinsci.plugins.jbpm.test" tns:packageName="org.jenkinsci.plugins.jbpm" >
 
     <!-- nodes -->
-    <startEvent id="_1" name="Start" />
     <task id="_2" name="hello-job" tns:taskName="JenkinsJob" >
       <ioSpecification>
         <dataInput id="_2_JobNameToLaunchInput" name="JobNameToLaunch" />
@@ -33,34 +32,119 @@
         </assignment>
       </dataInputAssociation>
     </task>
-    <endEvent id="_3" name="End" >
+    <exclusiveGateway id="_3" name="Gateway" gatewayDirection="Diverging" />
+    <task id="_4" name="Jenkins Job" tns:taskName="JenkinsJob" >
+      <ioSpecification>
+        <inputSet>
+        </inputSet>
+        <outputSet>
+        </outputSet>
+      </ioSpecification>
+    </task>
+    <userTask id="_5" name="User Task" >
+      <ioSpecification>
+        <inputSet>
+        </inputSet>
+        <outputSet>
+        </outputSet>
+      </ioSpecification>
+    </userTask>
+    <exclusiveGateway id="_6" name="Gateway" gatewayDirection="Converging" />
+    <startEvent id="_7" name="Start" />
+    <endEvent id="_9" name="End" >
+        <terminateEventDefinition/>
+    </endEvent>
+    <exclusiveGateway id="_10" name="Gateway" gatewayDirection="Diverging" />
+    <endEvent id="_11" name="End" >
         <terminateEventDefinition/>
     </endEvent>
 
     <!-- connections -->
-    <sequenceFlow id="_1-_2" sourceRef="_1" targetRef="_2" />
+    <sequenceFlow id="_6-_2" sourceRef="_6" targetRef="_2" />
     <sequenceFlow id="_2-_3" sourceRef="_2" targetRef="_3" />
+    <sequenceFlow id="_3-_4" sourceRef="_3" targetRef="_4" >
+      <conditionExpression xsi:type="tFormalExpression" />
+    </sequenceFlow>
+    <sequenceFlow id="_3-_5" sourceRef="_3" targetRef="_5" >
+      <conditionExpression xsi:type="tFormalExpression" />
+    </sequenceFlow>
+    <sequenceFlow id="_7-_6" sourceRef="_7" targetRef="_6" />
+    <sequenceFlow id="_10-_6" sourceRef="_10" targetRef="_6" >
+      <conditionExpression xsi:type="tFormalExpression" />
+    </sequenceFlow>
+    <sequenceFlow id="_4-_9" sourceRef="_4" targetRef="_9" />
+    <sequenceFlow id="_5-_10" sourceRef="_5" targetRef="_10" />
+    <sequenceFlow id="_10-_11" sourceRef="_10" targetRef="_11" >
+      <conditionExpression xsi:type="tFormalExpression" />
+    </sequenceFlow>
 
   </process>
 
   <bpmndi:BPMNDiagram>
-    <bpmndi:BPMNPlane bpmnElement="test" >
-      <bpmndi:BPMNShape bpmnElement="_1" >
-        <dc:Bounds x="100" y="100" width="48" height="48" />
-      </bpmndi:BPMNShape>
+    <bpmndi:BPMNPlane bpmnElement="org.jenkinsci.plugins.jbpm.test" >
       <bpmndi:BPMNShape bpmnElement="_2" >
-        <dc:Bounds x="253" y="107" width="161" height="48" />
+        <dc:Bounds x="183" y="106" width="161" height="48" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="_3" >
-        <dc:Bounds x="530" y="100" width="48" height="48" />
+        <dc:Bounds x="385" y="105" width="48" height="48" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge bpmnElement="_1-_2" >
-        <di:waypoint x="124" y="124" />
-        <di:waypoint x="333" y="131" />
+      <bpmndi:BPMNShape bpmnElement="_4" >
+        <dc:Bounds x="512" y="102" width="162" height="47" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="_5" >
+        <dc:Bounds x="333" y="232" width="157" height="48" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="_6" >
+        <dc:Bounds x="96" y="105" width="48" height="48" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="_7" >
+        <dc:Bounds x="21" y="106" width="48" height="48" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="_9" >
+        <dc:Bounds x="747" y="101" width="48" height="48" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="_10" >
+        <dc:Bounds x="386" y="339" width="48" height="48" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="_11" >
+        <dc:Bounds x="555" y="339" width="48" height="48" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="_6-_2" >
+        <di:waypoint x="120" y="129" />
+        <di:waypoint x="263" y="130" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="_2-_3" >
-        <di:waypoint x="333" y="131" />
-        <di:waypoint x="554" y="124" />
+        <di:waypoint x="263" y="130" />
+        <di:waypoint x="409" y="129" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_3-_4" >
+        <di:waypoint x="409" y="129" />
+        <di:waypoint x="593" y="125" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_3-_5" >
+        <di:waypoint x="409" y="129" />
+        <di:waypoint x="411" y="256" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_7-_6" >
+        <di:waypoint x="45" y="130" />
+        <di:waypoint x="120" y="129" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_10-_6" >
+        <di:waypoint x="410" y="363" />
+        <di:waypoint x="118" y="359" />
+        <di:waypoint x="120" y="129" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_4-_9" >
+        <di:waypoint x="593" y="125" />
+        <di:waypoint x="771" y="125" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_5-_10" >
+        <di:waypoint x="411" y="256" />
+        <di:waypoint x="410" y="363" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_10-_11" >
+        <di:waypoint x="410" y="363" />
+        <di:waypoint x="579" y="363" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

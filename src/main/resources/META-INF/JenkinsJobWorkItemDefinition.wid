@@ -12,7 +12,7 @@ import org.drools.process.core.datatype.impl.type.EnumDataType;
     "results" : [
       "Result" : new EnumDataType(),
     ],
-    "icon" : "icons/jenkins.ico",
+    "icon" : "icons/jenkins48.png",
   ]
      
 ]
