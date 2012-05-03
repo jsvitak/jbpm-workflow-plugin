@@ -42,57 +42,63 @@ import org.drools.runtime.process.WorkItemManager;
  */
 public class JenkinsJobWorkItemHandler implements WorkItemHandler {
 
-	private static BuildListener listener;
-	
-	public synchronized static void setListener(BuildListener _listener) {
-		listener = _listener;
-	}
-	
-	public synchronized static BuildListener getListener() {
-		return listener;
-	}
-	
-	public void executeWorkItem(WorkItem workItem,
-			WorkItemManager workItemManager) {
+    private static BuildListener listener;
+    
+    public synchronized static void setListener(BuildListener _listener) {
+        listener = _listener;
+    }    
+    
+    public synchronized static BuildListener getListener() {
+        return listener;
+    }
+    
+    public void executeWorkItem(WorkItem workItem,
+            WorkItemManager workItemManager) {
 
-		String jobName = (String) workItem.getParameter("JobNameToLaunch");
-		getListener().getLogger().println("Starting job: " + jobName);
-		
-		WorkItemCause cause = new WorkItemCause();
+	// extract input variables
+        String jenkinsJobName = (String) workItem.getParameter("jenkinsjenkinsJobName");
+        Map<String,Result> jenkinsJobResults = (Map<String,Result>) workItem.getParameter("jenkinsjenkinsJobResults");
+        
+        getListener().getLogger().println("Starting job: " + jenkinsJobName);
+        System.out.println("jenkinsJobName: " + jenkinsJobName);
 
-		System.out.println("jobName: " + jobName);
+        Hudson h = Hudson.getInstance();
+        AbstractProject ap = h
+                .getItemByFullName(jenkinsJobName, AbstractProject.class);
 
-		Hudson h = Hudson.getInstance();
-		AbstractProject ap = h
-				.getItemByFullName(jobName, AbstractProject.class);
-		System.out.println("getItemByFullName: " + ap);
+        /*
+        System.out.println("getItemByFullName: " + ap);
+        TopLevelItem ap2 = h.getItem(jenkinsJobName);
+        System.out.println("getItem: " + ap2);
+        System.out.println("getItemMap" + h.getItemMap());
+        System.out.println("getItems" + h.getItems());
+	*/
 
-		TopLevelItem ap2 = h.getItem(jobName);
-		System.out.println("getItem: " + ap2);
+        // schedule a build and wait for completion
+        WorkItemCause cause = new WorkItemCause();
+        Future future = ap.scheduleBuild2(0, cause);
+        synchronized (future) {
+            try {
+                future.wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        
+        // add Jenkins job result to map of Jenkins job results
+        Result result = ap.getBuilds().getLastBuild().getResult();
+        jenkinsJobResults.put(String.valueOf(workItem.getId()), result);
+        
+        // add Jenkins job results map to output variables map
+        Map<String,Object> workItemResults = new HashMap<String,Object>();
+        workItemResults.put("jenkinsJobResults", jenkinsJobResults);
+        
+        workItemManager.completeWorkItem(workItem.getId(), workItemResults);
+        getListener().getLogger().println("Completed job: " + jenkinsJobName);
+    }
 
-		System.out.println("getItemMap" + h.getItemMap());
-		System.out.println("getItems" + h.getItems());
+    public void abortWorkItem(WorkItem arg0, WorkItemManager arg1) {
 
-		Future future = ap.scheduleBuild2(0, cause);
-
-		synchronized (future) {
-			try {
-				future.wait();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-		
-		Result result = ap.getBuilds().getLastBuild().getResult();
-		Map<String,Object> results = new HashMap<String,Object> ();
-		results.put("Result", result);
-		
-		workItemManager.completeWorkItem(workItem.getId(), results);
-		getListener().getLogger().println("Completed job: " + jobName);
-	}
-
-	public void abortWorkItem(WorkItem arg0, WorkItemManager arg1) {
-
-	}
+    }
 
 }

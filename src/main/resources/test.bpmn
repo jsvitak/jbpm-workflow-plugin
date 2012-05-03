@@ -17,13 +17,30 @@
     <!-- nodes -->
     <task id="_2" name="hello-job" tns:taskName="JenkinsJob" >
       <ioSpecification>
+        <dataInput id="_2_jenkinsJobResultsInput" name="jenkinsJobResults" />
+        <dataInput id="_2_jenkinsJobNameInput" name="jenkinsJobName" />
         <dataInput id="_2_JobNameToLaunchInput" name="JobNameToLaunch" />
+        <dataOutput id="_2_jenkinsJobResultsOutput" name="jenkinsJobResults" />
         <inputSet>
+          <dataInputRefs>_2_jenkinsJobResultsInput</dataInputRefs>
+          <dataInputRefs>_2_jenkinsJobNameInput</dataInputRefs>
           <dataInputRefs>_2_JobNameToLaunchInput</dataInputRefs>
         </inputSet>
         <outputSet>
+          <dataOutputRefs>_2_jenkinsJobResultsOutput</dataOutputRefs>
         </outputSet>
       </ioSpecification>
+      <dataInputAssociation>
+        <sourceRef>jobResults</sourceRef>
+        <targetRef>_2_jenkinsJobResultsInput</targetRef>
+      </dataInputAssociation>
+      <dataInputAssociation>
+        <targetRef>_2_jenkinsJobNameInput</targetRef>
+        <assignment>
+          <from xsi:type="tFormalExpression">hello-job</from>
+          <to xsi:type="tFormalExpression">_2_jenkinsJobNameInput</to>
+        </assignment>
+      </dataInputAssociation>
       <dataInputAssociation>
         <targetRef>_2_JobNameToLaunchInput</targetRef>
         <assignment>
@@ -31,17 +48,42 @@
           <to xsi:type="tFormalExpression">_2_JobNameToLaunchInput</to>
         </assignment>
       </dataInputAssociation>
+      <dataOutputAssociation>
+        <sourceRef>_2_jenkinsJobResultsOutput</sourceRef>
+        <targetRef>jobResults</targetRef>
+      </dataOutputAssociation>
     </task>
     <exclusiveGateway id="_3" name="Gateway" gatewayDirection="Diverging" />
-    <task id="_4" name="Jenkins Job" tns:taskName="JenkinsJob" >
+    <task id="_4" name="hello-job 2" tns:taskName="JenkinsJob" >
       <ioSpecification>
+        <dataInput id="_4_jenkinsJobResultsInput" name="jenkinsJobResults" />
+        <dataInput id="_4_jenkinsJobNameInput" name="jenkinsJobName" />
+        <dataOutput id="_4_jenkinsJobResultsOutput" name="jenkinsJobResults" />
         <inputSet>
+          <dataInputRefs>_4_jenkinsJobResultsInput</dataInputRefs>
+          <dataInputRefs>_4_jenkinsJobNameInput</dataInputRefs>
         </inputSet>
         <outputSet>
+          <dataOutputRefs>_4_jenkinsJobResultsOutput</dataOutputRefs>
         </outputSet>
       </ioSpecification>
+      <dataInputAssociation>
+        <sourceRef>jobResults</sourceRef>
+        <targetRef>_4_jenkinsJobResultsInput</targetRef>
+      </dataInputAssociation>
+      <dataInputAssociation>
+        <targetRef>_4_jenkinsJobNameInput</targetRef>
+        <assignment>
+          <from xsi:type="tFormalExpression">hello-job</from>
+          <to xsi:type="tFormalExpression">_4_jenkinsJobNameInput</to>
+        </assignment>
+      </dataInputAssociation>
+      <dataOutputAssociation>
+        <sourceRef>_4_jenkinsJobResultsOutput</sourceRef>
+        <targetRef>jobResults</targetRef>
+      </dataOutputAssociation>
     </task>
-    <userTask id="_5" name="User Task" >
+    <userTask id="_5" name="Developer's decision" >
       <ioSpecification>
         <inputSet>
         </inputSet>
@@ -63,19 +105,19 @@
     <sequenceFlow id="_6-_2" sourceRef="_6" targetRef="_2" />
     <sequenceFlow id="_2-_3" sourceRef="_2" targetRef="_3" />
     <sequenceFlow id="_3-_4" sourceRef="_3" targetRef="_4" >
-      <conditionExpression xsi:type="tFormalExpression" />
+      <conditionExpression xsi:type="tFormalExpression" ></conditionExpression>
     </sequenceFlow>
     <sequenceFlow id="_3-_5" sourceRef="_3" targetRef="_5" >
-      <conditionExpression xsi:type="tFormalExpression" />
+      <conditionExpression xsi:type="tFormalExpression" ></conditionExpression>
     </sequenceFlow>
     <sequenceFlow id="_7-_6" sourceRef="_7" targetRef="_6" />
     <sequenceFlow id="_10-_6" sourceRef="_10" targetRef="_6" >
-      <conditionExpression xsi:type="tFormalExpression" />
+      <conditionExpression xsi:type="tFormalExpression" ></conditionExpression>
     </sequenceFlow>
     <sequenceFlow id="_4-_9" sourceRef="_4" targetRef="_9" />
     <sequenceFlow id="_5-_10" sourceRef="_5" targetRef="_10" />
     <sequenceFlow id="_10-_11" sourceRef="_10" targetRef="_11" >
-      <conditionExpression xsi:type="tFormalExpression" />
+      <conditionExpression xsi:type="tFormalExpression" ></conditionExpression>
     </sequenceFlow>
 
   </process>
@@ -92,7 +134,7 @@
         <dc:Bounds x="512" y="102" width="162" height="47" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="_5" >
-        <dc:Bounds x="333" y="232" width="157" height="48" />
+        <dc:Bounds x="302" y="232" width="214" height="48" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="_6" >
         <dc:Bounds x="96" y="105" width="48" height="48" />
@@ -123,7 +165,7 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="_3-_5" >
         <di:waypoint x="409" y="129" />
-        <di:waypoint x="411" y="256" />
+        <di:waypoint x="409" y="256" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="_7-_6" >
         <di:waypoint x="45" y="130" />
@@ -139,7 +181,7 @@
         <di:waypoint x="771" y="125" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="_5-_10" >
-        <di:waypoint x="411" y="256" />
+        <di:waypoint x="409" y="256" />
         <di:waypoint x="410" y="363" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="_10-_11" >

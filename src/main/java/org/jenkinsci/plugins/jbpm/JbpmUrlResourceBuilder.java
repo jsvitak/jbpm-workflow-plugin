@@ -20,15 +20,22 @@
 package org.jenkinsci.plugins.jbpm;
 
 import static org.jenkinsci.plugins.jbpm.JenkinsJobWorkItemHandler.setListener;
-
-import hudson.Launcher;
 import hudson.Extension;
-import hudson.util.FormValidation;
-import hudson.model.AbstractBuild;
+import hudson.Launcher;
 import hudson.model.BuildListener;
+import hudson.model.Result;
+import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.tasks.Builder;
 import hudson.tasks.BuildStepDescriptor;
+import hudson.tasks.Builder;
+import hudson.util.FormValidation;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.servlet.ServletException;
+
 import net.sf.json.JSONObject;
 
 import org.drools.KnowledgeBase;
@@ -39,11 +46,8 @@ import org.drools.builder.ResourceType;
 import org.drools.io.ResourceFactory;
 import org.drools.runtime.StatefulKnowledgeSession;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.QueryParameter;
-
-import javax.servlet.ServletException;
-import java.io.IOException;
+import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * 
@@ -103,7 +107,11 @@ public class JbpmUrlResourceBuilder extends Builder {
         ksession.getWorkItemManager().registerWorkItemHandler(
         	    "JenkinsJob", new JenkinsJobWorkItemHandler());
         
-        ksession.startProcess(processId);
+        Map<String,Object> processVariables = new HashMap<String,Object>();
+        Map<String,Result> jobResults = new HashMap<String,Result>();
+        processVariables.put("jobResults", jobResults);        
+        
+        ksession.startProcess(processId, processVariables);
         
         return true;
     }
