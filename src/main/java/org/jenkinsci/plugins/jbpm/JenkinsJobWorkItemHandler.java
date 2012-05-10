@@ -56,12 +56,22 @@ public class JenkinsJobWorkItemHandler implements WorkItemHandler {
             WorkItemManager workItemManager) {
 
 	// extract input variables
-        String jenkinsJobName = (String) workItem.getParameter("jenkinsjenkinsJobName");
-        Map<String,Result> jenkinsJobResults = (Map<String,Result>) workItem.getParameter("jenkinsjenkinsJobResults");
+        String jenkinsJobName = (String) workItem.getParameter("jenkinsJobName");
+        Map<String,Result> jenkinsJobResults = (Map<String,Result>) workItem.getParameter("jenkinsJobResultsInput");
         
-        getListener().getLogger().println("Starting job: " + jenkinsJobName);
+        // jenkinsJobName
+        getListener().getLogger().println("jenkinsJobName: " + jenkinsJobName);
         System.out.println("jenkinsJobName: " + jenkinsJobName);
 
+        // work item id
+        getListener().getLogger().println("work item id: " + String.valueOf(workItem.getId()));
+        System.out.println("jenkinsJobName: " + String.valueOf(workItem.getId()));
+        
+        // jenkinsJobResults
+        getListener().getLogger().println("jenkinsJobResultsInput: " + jenkinsJobResults);
+        System.out.println("jenkinsJobResults: " + jenkinsJobResults);
+        
+        // start new job specified by jenkinsJobName
         Hudson h = Hudson.getInstance();
         AbstractProject ap = h
                 .getItemByFullName(jenkinsJobName, AbstractProject.class);
@@ -87,11 +97,13 @@ public class JenkinsJobWorkItemHandler implements WorkItemHandler {
         
         // add Jenkins job result to map of Jenkins job results
         Result result = ap.getBuilds().getLastBuild().getResult();
-        jenkinsJobResults.put(String.valueOf(workItem.getId()), result);
+        getListener().getLogger().println("result: " + result);
+        System.out.println("result: " + result);
+        jenkinsJobResults.put(jenkinsJobName, result);
         
         // add Jenkins job results map to output variables map
         Map<String,Object> workItemResults = new HashMap<String,Object>();
-        workItemResults.put("jenkinsJobResults", jenkinsJobResults);
+        workItemResults.put("jenkinsJobResultsOutput", jenkinsJobResults);
         
         workItemManager.completeWorkItem(workItem.getId(), workItemResults);
         getListener().getLogger().println("Completed job: " + jenkinsJobName);

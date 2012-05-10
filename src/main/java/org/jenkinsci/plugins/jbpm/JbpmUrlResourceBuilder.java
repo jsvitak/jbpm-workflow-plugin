@@ -108,8 +108,8 @@ public class JbpmUrlResourceBuilder extends Builder {
         	    "JenkinsJob", new JenkinsJobWorkItemHandler());
         
         Map<String,Object> processVariables = new HashMap<String,Object>();
-        Map<String,Result> jobResults = new HashMap<String,Result>();
-        processVariables.put("jobResults", jobResults);        
+        Map<String,Result> jenkinsJobResults = new HashMap<String,Result>();
+        processVariables.put("jenkinsJobResults", jenkinsJobResults);        
         
         ksession.startProcess(processId, processVariables);
         
