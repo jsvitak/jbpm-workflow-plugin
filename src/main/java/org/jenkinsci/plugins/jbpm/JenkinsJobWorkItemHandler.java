@@ -43,20 +43,21 @@ import org.drools.runtime.process.WorkItemManager;
 public class JenkinsJobWorkItemHandler implements WorkItemHandler {
 
     private static BuildListener listener;
-    
-    public synchronized static void setListener(BuildListener _listener) {
-        listener = _listener;
-    }    
-    
+
     public synchronized static BuildListener getListener() {
         return listener;
     }
     
+    public synchronized static void setListener(BuildListener listener) {
+	JenkinsJobWorkItemHandler.listener = listener;
+    }    
+    
+    
     public void executeWorkItem(WorkItem workItem,
             WorkItemManager workItemManager) {
-
+	
 	// extract input variables
-        String jenkinsJobName = (String) workItem.getParameter("jenkinsJobName");
+        String jenkinsJobName = (String) workItem.getParameter("jenkinsJobNameInput");
         Map<String,Result> jenkinsJobResults = (Map<String,Result>) workItem.getParameter("jenkinsJobResultsInput");
         
         // jenkinsJobName
@@ -104,6 +105,9 @@ public class JenkinsJobWorkItemHandler implements WorkItemHandler {
         // add Jenkins job results map to output variables map
         Map<String,Object> workItemResults = new HashMap<String,Object>();
         workItemResults.put("jenkinsJobResultsOutput", jenkinsJobResults);
+        
+        // add/update also last result
+        workItemResults.put("jenkinsLastJobResultOutput", result);
         
         workItemManager.completeWorkItem(workItem.getId(), workItemResults);
         getListener().getLogger().println("Completed job: " + jenkinsJobName);

@@ -19,7 +19,6 @@
 
 package org.jenkinsci.plugins.jbpm;
 
-import static org.jenkinsci.plugins.jbpm.JenkinsJobWorkItemHandler.setListener;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.BuildListener;
@@ -33,6 +32,7 @@ import hudson.util.FormValidation;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.servlet.ServletException;
 
@@ -41,6 +41,7 @@ import net.sf.json.JSONObject;
 import org.drools.KnowledgeBase;
 import org.drools.KnowledgeBaseFactory;
 import org.drools.builder.KnowledgeBuilder;
+import org.drools.builder.KnowledgeBuilderConfiguration;
 import org.drools.builder.KnowledgeBuilderFactory;
 import org.drools.builder.ResourceType;
 import org.drools.io.ResourceFactory;
@@ -82,34 +83,41 @@ public class JbpmUrlResourceBuilder extends Builder {
 
     @Override
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) {
-        // This is where you 'build' the project.
-        // Since this is a dummy, we just say 'hello world' and call that a build.
 
         // This also shows how you can consult the global configuration of the builder
         if (getDescriptor().useFrench())
             listener.getLogger().println("Bonjour, "+url+"!");
         else
             listener.getLogger().println("Hello, "+url+"!");
-        
         listener.getLogger().println("processId: " + processId);
         
-        KnowledgeBuilder kbuilder = KnowledgeBuilderFactory.newKnowledgeBuilder();
-        kbuilder.add(ResourceFactory.newUrlResource(url), ResourceType.BPMN2);
+        Properties props = new Properties();
+        props.setProperty("drools.dialect.java.compiler", "JANINO");
+        KnowledgeBuilderConfiguration config = KnowledgeBuilderFactory.newKnowledgeBuilderConfiguration(props);
         
-        listener.getLogger().println(kbuilder.getErrors());
+        KnowledgeBuilder kbuilder = KnowledgeBuilderFactory.newKnowledgeBuilder(config);
+        kbuilder.add(ResourceFactory.newUrlResource(url), ResourceType.BPMN2);
+        if (kbuilder.hasErrors()) {
+            listener.getLogger().println(kbuilder.getErrors());
+            return false;
+        }
         
         KnowledgeBase kbase = KnowledgeBaseFactory.newKnowledgeBase();
         kbase.addKnowledgePackages(kbuilder.getKnowledgePackages());
         
-        setListener(listener);
+        JenkinsJobWorkItemHandler.setListener(listener);
         
         StatefulKnowledgeSession ksession = kbase.newStatefulKnowledgeSession();
         ksession.getWorkItemManager().registerWorkItemHandler(
         	    "JenkinsJob", new JenkinsJobWorkItemHandler());
         
         Map<String,Object> processVariables = new HashMap<String,Object>();
+        
         Map<String,Result> jenkinsJobResults = new HashMap<String,Result>();
         processVariables.put("jenkinsJobResults", jenkinsJobResults);        
+        
+        Result result = null;
+        processVariables.put("jenkinsLastJobResult", result);
         
         ksession.startProcess(processId, processVariables);
         
@@ -142,8 +150,6 @@ public class JbpmUrlResourceBuilder extends Builder {
          * If you don't want fields to be persisted, use <tt>transient</tt>.
          */
         private boolean useFrench;
-        
-        //private String processFileName;
         
         /**
          * Performs on-the-fly validation of the form field 'name'.
@@ -194,11 +200,6 @@ public class JbpmUrlResourceBuilder extends Builder {
             return useFrench;
         }
         
-        /*
-        public String getProcessFileName() {
-        	return processFileName;
-        }
-        */
     }
 }
 
