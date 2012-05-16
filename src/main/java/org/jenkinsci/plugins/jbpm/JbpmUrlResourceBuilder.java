@@ -30,11 +30,12 @@ import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-
-import javax.servlet.ServletException;
 
 import net.sf.json.JSONObject;
 
@@ -60,10 +61,14 @@ import org.kohsuke.stapler.StaplerRequest;
  */
 public class JbpmUrlResourceBuilder extends Builder {
 
+    // business process url
     private final String url;
+    // business process identifier
     private final String processId;
 
-    // Fields in config.jelly must match the parameter names in the "DataBoundConstructor"
+    /**
+     * Fields in config.jelly must match the parameter names in the "DataBoundConstructor"
+     */
     @DataBoundConstructor
     public JbpmUrlResourceBuilder(String url, String processId) {
         this.url = url;
@@ -76,20 +81,23 @@ public class JbpmUrlResourceBuilder extends Builder {
     public String getUrl() {
         return url;
     }
-    
+
+    /**
+     * We'll use this from the <tt>config.jelly</tt>.
+     */
     public String getProcessId() {
     	return processId;
     }
 
+    /**
+     * Implements behavior of our build step.
+     */
     @Override
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) {
 
-        // This also shows how you can consult the global configuration of the builder
-        if (getDescriptor().useFrench())
-            listener.getLogger().println("Bonjour, "+url+"!");
-        else
-            listener.getLogger().println("Hello, "+url+"!");
-        listener.getLogger().println("processId: " + processId);
+	Logger.setListener(listener);
+	Logger.setCliConsoleEnabled(!getDescriptor().disableCliConsoleLogging());
+	Logger.setWebConsoleEnabled(!getDescriptor().disableWebConsoleLogging());
         
         Properties props = new Properties();
         props.setProperty("drools.dialect.java.compiler", "JANINO");
@@ -98,14 +106,13 @@ public class JbpmUrlResourceBuilder extends Builder {
         KnowledgeBuilder kbuilder = KnowledgeBuilderFactory.newKnowledgeBuilder(config);
         kbuilder.add(ResourceFactory.newUrlResource(url), ResourceType.BPMN2);
         if (kbuilder.hasErrors()) {
-            listener.getLogger().println(kbuilder.getErrors());
+            Logger.log("Building of a business process definition " + processId + " from location " + url.toString() + "has failed due to following reasons:");
+            Logger.log(kbuilder.getErrors().toString());
             return false;
         }
         
         KnowledgeBase kbase = KnowledgeBaseFactory.newKnowledgeBase();
         kbase.addKnowledgePackages(kbuilder.getKnowledgePackages());
-        
-        JenkinsJobWorkItemHandler.setListener(listener);
         
         StatefulKnowledgeSession ksession = kbase.newStatefulKnowledgeSession();
         ksession.getWorkItemManager().registerWorkItemHandler(
@@ -119,14 +126,15 @@ public class JbpmUrlResourceBuilder extends Builder {
         Result result = null;
         processVariables.put("jenkinsLastJobResult", result);
         
+        Logger.log("Starting business process " + processId);
         ksession.startProcess(processId, processVariables);
         
         return true;
     }
     
-    // Overridden for better type safety.
-    // If your plugin doesn't really define any property on Descriptor,
-    // you don't have to do this.
+    /**
+     * Not necessary (as we define some properties), but overridden for better safety.
+     */
     @Override
     public DescriptorImpl getDescriptor() {
         return (DescriptorImpl)super.getDescriptor();
@@ -135,69 +143,86 @@ public class JbpmUrlResourceBuilder extends Builder {
     /**
      * Descriptor for {@link JbpmUrlResourceBuilder}. Used as a singleton.
      * The class is marked as public so that it can be accessed from views.
-     *
-     * <p>
-     * See <tt>src/main/resources/hudson/plugins/hello_world/HelloWorldBuilder/*.jelly</tt>
-     * for the actual HTML fragment for the configuration screen.
      */
-    @Extension // This indicates to Jenkins that this is an implementation of an extension point.
+    @Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
+
+	// global configuration fields, persisted by default
+        private boolean disableCliConsoleLogging;
+        private boolean disableWebConsoleLogging;
+	
         /**
-         * To persist global configuration information,
-         * simply store it in a field and call save().
-         *
-         * <p>
-         * If you don't want fields to be persisted, use <tt>transient</tt>.
+         * Performs on-the-fly validation of the form field 'url'.
+         * @param value
+         * 	This parameter receives the url string.
+         * @return
+         * 	Indicates the outcome of the validation. This is sent to the browser.
          */
-        private boolean useFrench;
+        public FormValidation doCheckUrl(@QueryParameter String value) {
+            try {
+        	URL url = new URL(value);
+        	URLConnection conn = url.openConnection();
+        	conn.connect();
+            } catch (MalformedURLException e) {
+        	return FormValidation.error("The URL is not in a valid form.");
+            } catch (IOException e) {
+        	return FormValidation.error("The connection could not be established to specified URL.");
+            }
+            return FormValidation.ok();
+        }
         
         /**
-         * Performs on-the-fly validation of the form field 'name'.
-         *
+         * Performs on-the-fly validation of the form field 'processId'.
          * @param value
-         *      This parameter receives the value that the user has typed.
+         * 	This parameter receives the processId string.
          * @return
-         *      Indicates the outcome of the validation. This is sent to the browser.
+         * 	Indicates the outcome of the validation. This is sent to the browser.
          */
-        public FormValidation doCheckName(@QueryParameter String value)
-                throws IOException, ServletException {
-            if (value.length() == 0)
-                return FormValidation.error("Please set a name");
-            if (value.length() < 4)
-                return FormValidation.warning("Isn't the name too short?");
+        public FormValidation doCheckProcessId(@QueryParameter String value) {
+            if (value.length() == 0) {
+        	return FormValidation.error("Please specify a valid process ID.");
+            }
             return FormValidation.ok();
         }
 
+        /**
+         * Indicates that this builder can be used with all kinds of project types.
+         */
         public boolean isApplicable(Class<? extends AbstractProject> aClass) {
-            // Indicates that this builder can be used with all kinds of project types 
             return true;
         }
 
         /**
-         * This human readable name is used in the configuration screen.
+         * This human readable name is used in the configuration screen
+         * when selecting a new build step.
          */
         public String getDisplayName() {
             return "Invoke a BPMN 2.0 business process";
         }
 
+        /**
+         * Saves global configuration.
+         */
         @Override
         public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
-            // To persist global configuration information,
-            // set that to properties and call save().
-            useFrench = formData.getBoolean("useFrench");
-            // ^Can also use req.bindJSON(this, formData);
-            //  (easier when there are many fields; need set* methods for this, like setUseFrench)
-            
-            //processFileName = formData.getString("processFileName");
+            disableCliConsoleLogging = formData.getBoolean("disableCliConsoleLogging");
+            disableWebConsoleLogging = formData.getBoolean("disableWebConsoleLogging");
             save();
             return super.configure(req,formData);
         }
 
         /**
-         * This method returns true if the global configuration says we should speak French.
+         * Used to load current value for global configuration screen.
          */
-        public boolean useFrench() {
-            return useFrench;
+        public boolean disableCliConsoleLogging() {
+            return disableCliConsoleLogging;
+        }
+ 
+        /**
+         * Used to load current value for global configuration screen.
+         */
+        public boolean disableWebConsoleLogging() {
+            return disableWebConsoleLogging;
         }
         
     }

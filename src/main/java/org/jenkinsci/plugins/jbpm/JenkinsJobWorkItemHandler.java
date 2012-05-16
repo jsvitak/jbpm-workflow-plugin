@@ -41,49 +41,21 @@ import org.drools.runtime.process.WorkItemManager;
  *
  */
 public class JenkinsJobWorkItemHandler implements WorkItemHandler {
-
-    private static BuildListener listener;
-
-    public synchronized static BuildListener getListener() {
-        return listener;
-    }
-    
-    public synchronized static void setListener(BuildListener listener) {
-	JenkinsJobWorkItemHandler.listener = listener;
-    }    
-    
     
     public void executeWorkItem(WorkItem workItem,
             WorkItemManager workItemManager) {
 	
 	// extract input variables
-        String jenkinsJobName = (String) workItem.getParameter("jenkinsJobNameInput");
-        Map<String,Result> jenkinsJobResults = (Map<String,Result>) workItem.getParameter("jenkinsJobResultsInput");
-        
-        // jenkinsJobName
-        getListener().getLogger().println("jenkinsJobName: " + jenkinsJobName);
-        System.out.println("jenkinsJobName: " + jenkinsJobName);
 
-        // work item id
-        getListener().getLogger().println("work item id: " + String.valueOf(workItem.getId()));
-        System.out.println("jenkinsJobName: " + String.valueOf(workItem.getId()));
+	String jenkinsJobName = (String) workItem.getParameter("jenkinsJobNameInput");
+	Map<String,Result> jenkinsJobResults = (Map<String,Result>) workItem.getParameter("jenkinsJobResultsInput");
         
-        // jenkinsJobResults
-        getListener().getLogger().println("jenkinsJobResultsInput: " + jenkinsJobResults);
-        System.out.println("jenkinsJobResults: " + jenkinsJobResults);
-        
+        Logger.log("Started executing of Jenkins job work item " + jenkinsJobName);
+                
         // start new job specified by jenkinsJobName
         Hudson h = Hudson.getInstance();
         AbstractProject ap = h
                 .getItemByFullName(jenkinsJobName, AbstractProject.class);
-
-        /*
-        System.out.println("getItemByFullName: " + ap);
-        TopLevelItem ap2 = h.getItem(jenkinsJobName);
-        System.out.println("getItem: " + ap2);
-        System.out.println("getItemMap" + h.getItemMap());
-        System.out.println("getItems" + h.getItems());
-	*/
 
         // schedule a build and wait for completion
         WorkItemCause cause = new WorkItemCause();
@@ -96,21 +68,20 @@ public class JenkinsJobWorkItemHandler implements WorkItemHandler {
             }
         }
         
-        // add Jenkins job result to map of Jenkins job results
+        // add a Jenkins job result to the map of Jenkins job results
         Result result = ap.getBuilds().getLastBuild().getResult();
-        getListener().getLogger().println("result: " + result);
-        System.out.println("result: " + result);
         jenkinsJobResults.put(jenkinsJobName, result);
         
-        // add Jenkins job results map to output variables map
+        // add a Jenkins job results map to the output variables map
         Map<String,Object> workItemResults = new HashMap<String,Object>();
         workItemResults.put("jenkinsJobResultsOutput", jenkinsJobResults);
         
-        // add/update also last result
+        // add/update also the last result
         workItemResults.put("jenkinsLastJobResultOutput", result);
         
         workItemManager.completeWorkItem(workItem.getId(), workItemResults);
-        getListener().getLogger().println("Completed job: " + jenkinsJobName);
+        Logger.log("Completed executing of Jenkins job work item " + jenkinsJobName);
+        
     }
 
     public void abortWorkItem(WorkItem arg0, WorkItemManager arg1) {
