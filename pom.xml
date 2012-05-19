@@ -1,16 +1,24 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
         <version>1.447</version>
-        <!-- which version of Jenkins is this plugin built against? -->
     </parent>
 
-    <groupId>hudson.plugins.jbpm</groupId>
+    <groupId>org.jenkinsci.plugins.jbpm</groupId>
     <artifactId>jbpm-workflow-plugin</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <packaging>hpi</packaging>
+    <name>jBPM workflow plugin</name>
+    <url>https://github.com/jsvitak/jbpm-workflow-plugin</url>
+    <description>This plugin is able to start a BPMN 2.0 business process which launches and evaluates Jenkins jobs.</description>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -18,25 +26,11 @@
             <artifactId>jbpm-bpmn2</artifactId>
             <version>5.2.0.Final</version>
         </dependency>
-        <!--  
         <dependency>
             <groupId>org.jbpm</groupId>
             <artifactId>jbpm-human-task</artifactId>
             <version>5.2.0.Final</version>
         </dependency>
-        <dependency>
-            <groupId>org.jbpm</groupId>
-            <artifactId>jbpm-test</artifactId>
-            <version>5.2.0.Final</version>
-        </dependency>
-        -->
-        <!--
-        <dependency>
-         	<groupId>org.eclipse.jdt.core.compiler</groupId>
-         	<artifactId>ecj</artifactId>
-         	<version>3.5.1</version>
-        </dependency>
-        -->
         <dependency>
             <groupId>janino</groupId>
             <artifactId>janino</artifactId>
@@ -44,14 +38,7 @@
         </dependency>
     </dependencies>
 
-    <!-- get every artifact through maven.glassfish.org, which proxies all the artifacts that we need -->
     <repositories>
-        <!--
-        <repository>
-            <id>m.g.o-public</id>
-            <url>http://maven.glassfish.org/content/groups/public/</url>
-        </repository>
-        -->
         <repository>
             <id>repo.jenkins-ci.org</id>
             <url>http://repo.jenkins-ci.org/public/</url>
@@ -70,39 +57,13 @@
                 <updatePolicy>daily</updatePolicy>
             </snapshots>
         </repository>
-        <!--
-        <repository>
-            <id>jboss-snapshot-repository-group</id>
-            <name>JBoss SNAPSHOT Maven Repository Group</name>
-            <url>https://repository.jboss.org/nexus/content/repositories/snapshots/</url>
-            <layout>default</layout>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-                <updatePolicy>never</updatePolicy>
-            </snapshots>
-        </repository>
-        -->
       </repositories>
 
     <pluginRepositories>
-        <!--
-        <pluginRepository>
-            <id>m.g.o-public</id>
-            <url>http://maven.glassfish.org/content/groups/public/</url>
-        </pluginRepository>
-        -->
         <pluginRepository>
             <id>repo.jenkins-ci.org</id>
             <url>http://repo.jenkins-ci.org/public/</url>
         </pluginRepository>
     </pluginRepositories>
 
-
-    <name>jBPM workflow plugin</name>
-    <url>https://github.com/jsvitak/jbpm-workflow-plugin</url>
-    <description>This plugin is able to start a BPMN 2.0 business process which launches and evaluates Jenkins jobs.
-</description>
 </project>

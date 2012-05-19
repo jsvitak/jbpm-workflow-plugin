@@ -33,7 +33,8 @@ import org.drools.runtime.process.WorkItemManager;
 
 /**
  * 
- * Implementation of JenkinsJob work item, which launches jobs and waits for their completion.
+ * Implements a handler for the JenkinsJob work item,
+ * which launches jobs and waits for their completion.
  * 
  * @author Jiri Svitak
  *
@@ -44,11 +45,10 @@ public class JenkinsJobWorkItemHandler implements WorkItemHandler {
             WorkItemManager workItemManager) {
 	
 	// extract input variables
-
 	String jenkinsJobName = (String) workItem.getParameter("jenkinsJobNameInput");
 	Map<String,Result> jenkinsJobResults = (Map<String,Result>) workItem.getParameter("jenkinsJobResultsInput");
         
-        Logger.log("Started executing of Jenkins job work item " + jenkinsJobName);
+        Logger.log("Started job " + jenkinsJobName);
                 
         // start new job specified by jenkinsJobName
         Hudson h = Hudson.getInstance();
@@ -78,7 +78,7 @@ public class JenkinsJobWorkItemHandler implements WorkItemHandler {
         workItemResults.put("jenkinsLastJobResultOutput", result);
         
         workItemManager.completeWorkItem(workItem.getId(), workItemResults);
-        Logger.log("Completed executing of Jenkins job work item " + jenkinsJobName);
+        Logger.log("Completed job " + jenkinsJobName);
         
     }
 

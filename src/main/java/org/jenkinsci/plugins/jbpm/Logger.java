@@ -23,7 +23,7 @@ import hudson.model.BuildListener;
 
 /**
  * 
- * Provides logging functionality to whole plugin.
+ * Provides simple logging functionality to the whole plugin.
  * 
  * @author Jiri Svitak
  *

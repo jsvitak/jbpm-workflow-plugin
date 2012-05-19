@@ -21,6 +21,13 @@ package org.jenkinsci.plugins.jbpm;
 
 import hudson.model.Cause;
 
+/**
+ * 
+ * Implements description of a cause, which is necessary for scheduling a job.
+ * 
+ * @author Jiri Svitak
+ *
+ */
 public class WorkItemCause extends Cause {
 
 	@Override

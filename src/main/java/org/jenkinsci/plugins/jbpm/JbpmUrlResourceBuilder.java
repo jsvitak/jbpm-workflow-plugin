@@ -36,6 +36,7 @@ import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.CountDownLatch;
 
 import net.sf.json.JSONObject;
 
@@ -47,9 +48,12 @@ import org.drools.builder.KnowledgeBuilderFactory;
 import org.drools.builder.ResourceType;
 import org.drools.io.ResourceFactory;
 import org.drools.runtime.StatefulKnowledgeSession;
+import org.jbpm.process.workitem.wsht.WSHumanTaskHandler;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
+
+
 
 /**
  * 
@@ -106,7 +110,7 @@ public class JbpmUrlResourceBuilder extends Builder {
         KnowledgeBuilder kbuilder = KnowledgeBuilderFactory.newKnowledgeBuilder(config);
         kbuilder.add(ResourceFactory.newUrlResource(url), ResourceType.BPMN2);
         if (kbuilder.hasErrors()) {
-            Logger.log("Building of a business process definition " + processId + " from location " + url.toString() + "has failed due to following reasons:");
+            Logger.log("Failed to build a business process definition " + processId + " from location " + url.toString() + " due to the following reasons:");
             Logger.log(kbuilder.getErrors().toString());
             return false;
         }
@@ -115,8 +119,14 @@ public class JbpmUrlResourceBuilder extends Builder {
         kbase.addKnowledgePackages(kbuilder.getKnowledgePackages());
         
         StatefulKnowledgeSession ksession = kbase.newStatefulKnowledgeSession();
+        
         ksession.getWorkItemManager().registerWorkItemHandler(
         	    "JenkinsJob", new JenkinsJobWorkItemHandler());
+        ksession.getWorkItemManager().registerWorkItemHandler("Human Task", new WSHumanTaskHandler());
+        
+        CountDownLatch latch = new CountDownLatch(1);
+        CompleteProcessEventListener processEventListener = new CompleteProcessEventListener(latch);
+        ksession.addEventListener(processEventListener);
         
         Map<String,Object> processVariables = new HashMap<String,Object>();
         
@@ -126,8 +136,16 @@ public class JbpmUrlResourceBuilder extends Builder {
         Result result = null;
         processVariables.put("jenkinsLastJobResult", result);
         
-        Logger.log("Starting business process " + processId);
+        Logger.log("Started business process " + processId);
+
         ksession.startProcess(processId, processVariables);
+        try {
+	    latch.await();
+	} catch (InterruptedException e) {
+	    e.printStackTrace();
+	}
+        
+        Logger.log("Completed business process " + processId);
         
         return true;
     }
@@ -159,6 +177,9 @@ public class JbpmUrlResourceBuilder extends Builder {
          * 	Indicates the outcome of the validation. This is sent to the browser.
          */
         public FormValidation doCheckUrl(@QueryParameter String value) {
+            if (value.length() == 0) {
+        	return FormValidation.error("Please specify a valid URL.");
+            }
             try {
         	URL url = new URL(value);
         	URLConnection conn = url.openConnection();
@@ -166,7 +187,7 @@ public class JbpmUrlResourceBuilder extends Builder {
             } catch (MalformedURLException e) {
         	return FormValidation.error("The URL is not in a valid form.");
             } catch (IOException e) {
-        	return FormValidation.error("The connection could not be established to specified URL.");
+        	return FormValidation.error("The connection could not be established to the specified URL.");
             }
             return FormValidation.ok();
         }
@@ -226,5 +247,6 @@ public class JbpmUrlResourceBuilder extends Builder {
         }
         
     }
+    
 }
 
