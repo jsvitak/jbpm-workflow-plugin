@@ -218,7 +218,7 @@ public class JbpmUrlResourceBuilder extends Builder {
          * when selecting a new build step.
          */
         public String getDisplayName() {
-            return "Invoke a BPMN 2.0 business process";
+            return "Invoke a jBPM business process";
         }
 
         /**
