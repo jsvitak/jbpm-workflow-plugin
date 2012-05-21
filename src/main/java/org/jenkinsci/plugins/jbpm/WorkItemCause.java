@@ -32,7 +32,7 @@ public class WorkItemCause extends Cause {
 
 	@Override
 	public String getShortDescription() {
-		return "jBPM work item invocation of Jenkins job";
+		return "Invoked by jBPM workflow plugin";
 	}
 
 }

@@ -15,7 +15,7 @@
 
     You should have received a copy of the GNU General Public License
     along with jBPM workflow plugin.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package org.jenkinsci.plugins.jbpm;
 
@@ -29,8 +29,12 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.Authenticator;
 import java.net.MalformedURLException;
+import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.HashMap;
@@ -53,15 +57,13 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
-
-
 /**
  * 
- * Implementation of build step which is able to invoke a BPMN 2.0 business process.
- * Uses jBPM 5.
+ * Implementation of build step which is able to invoke a BPMN 2.0 business
+ * process. Uses jBPM 5.
  * 
  * @author Jiri Svitak
- *
+ * 
  */
 public class JbpmUrlResourceBuilder extends Builder {
 
@@ -71,182 +73,220 @@ public class JbpmUrlResourceBuilder extends Builder {
     private final String processId;
 
     /**
-     * Fields in config.jelly must match the parameter names in the "DataBoundConstructor"
+     * Fields in config.jelly must match the parameter names in the
+     * "DataBoundConstructor"
      */
     @DataBoundConstructor
     public JbpmUrlResourceBuilder(String url, String processId) {
-        this.url = url;
-        this.processId = processId;
+	this.url = url;
+	this.processId = processId;
     }
 
     /**
      * We'll use this from the <tt>config.jelly</tt>.
      */
     public String getUrl() {
-        return url;
+	return url;
     }
 
     /**
      * We'll use this from the <tt>config.jelly</tt>.
      */
     public String getProcessId() {
-    	return processId;
+	return processId;
     }
 
     /**
      * Implements behavior of our build step.
      */
     @Override
-    public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) {
+    public boolean perform(AbstractBuild build, Launcher launcher,
+	    BuildListener listener) {
 
 	Logger.setListener(listener);
 	Logger.setCliConsoleEnabled(!getDescriptor().disableCliConsoleLogging());
 	Logger.setWebConsoleEnabled(!getDescriptor().disableWebConsoleLogging());
-        
-        Properties props = new Properties();
-        props.setProperty("drools.dialect.java.compiler", "JANINO");
-        KnowledgeBuilderConfiguration config = KnowledgeBuilderFactory.newKnowledgeBuilderConfiguration(props);
-        
-        KnowledgeBuilder kbuilder = KnowledgeBuilderFactory.newKnowledgeBuilder(config);
-        kbuilder.add(ResourceFactory.newUrlResource(url), ResourceType.BPMN2);
-        if (kbuilder.hasErrors()) {
-            Logger.log("Failed to build a business process definition " + processId + " from location " + url.toString() + " due to the following reasons:");
-            Logger.log(kbuilder.getErrors().toString());
-            return false;
-        }
-        
-        KnowledgeBase kbase = KnowledgeBaseFactory.newKnowledgeBase();
-        kbase.addKnowledgePackages(kbuilder.getKnowledgePackages());
-        
-        StatefulKnowledgeSession ksession = kbase.newStatefulKnowledgeSession();
-        
-        ksession.getWorkItemManager().registerWorkItemHandler(
-        	    "JenkinsJob", new JenkinsJobWorkItemHandler());
-        ksession.getWorkItemManager().registerWorkItemHandler("Human Task", new WSHumanTaskHandler());
-        
-        CountDownLatch latch = new CountDownLatch(1);
-        CompleteProcessEventListener processEventListener = new CompleteProcessEventListener(latch);
-        ksession.addEventListener(processEventListener);
-        
-        Map<String,Object> processVariables = new HashMap<String,Object>();
-        
-        Map<String,Result> jenkinsJobResults = new HashMap<String,Result>();
-        processVariables.put("jenkinsJobResults", jenkinsJobResults);        
-        
-        Result result = null;
-        processVariables.put("jenkinsLastJobResult", result);
-        
-        Logger.log("Started business process " + processId);
 
-        ksession.startProcess(processId, processVariables);
-        try {
+	Properties droolsProperties = new Properties();
+	droolsProperties.setProperty("drools.dialect.java.compiler", "JANINO");
+	KnowledgeBuilderConfiguration config = KnowledgeBuilderFactory
+		.newKnowledgeBuilderConfiguration(droolsProperties);
+
+	KnowledgeBuilder kbuilder = KnowledgeBuilderFactory
+		.newKnowledgeBuilder(config);
+
+	Authenticator.setDefault(new Authenticator() {
+	    @Override
+	    protected PasswordAuthentication getPasswordAuthentication() {
+		Properties pluginProperties = new Properties();
+		try {
+		    FileInputStream in;
+		    in = new FileInputStream("plugin.properties");
+		    pluginProperties.load(in);
+		    in.close();
+		} catch (FileNotFoundException e) {
+		    e.printStackTrace();
+		} catch (IOException e) {
+		    e.printStackTrace();
+		}
+		return new PasswordAuthentication(pluginProperties.getProperty(
+			"guvnor.user", "admin"), pluginProperties.getProperty(
+			"guvnor.password", "admin").toCharArray());
+	    }
+	});
+
+	kbuilder.add(ResourceFactory.newUrlResource(url), ResourceType.BPMN2);
+	if (kbuilder.hasErrors()) {
+	    Logger.log("Failed to build a business process definition "
+		    + processId + " from location " + url.toString()
+		    + " due to the following reasons:");
+	    Logger.log(kbuilder.getErrors().toString());
+	    return false;
+	}
+
+	KnowledgeBase kbase = KnowledgeBaseFactory.newKnowledgeBase();
+	kbase.addKnowledgePackages(kbuilder.getKnowledgePackages());
+
+	StatefulKnowledgeSession ksession = kbase.newStatefulKnowledgeSession();
+
+	ksession.getWorkItemManager().registerWorkItemHandler("JenkinsJob",
+		new JenkinsJobWorkItemHandler());
+	ksession.getWorkItemManager().registerWorkItemHandler("Human Task",
+		new WSHumanTaskHandler());
+
+	CountDownLatch latch = new CountDownLatch(1);
+	CompleteProcessEventListener processEventListener = new CompleteProcessEventListener(
+		latch);
+	ksession.addEventListener(processEventListener);
+
+	Map<String, Object> processVariables = new HashMap<String, Object>();
+
+	Map<String, Result> jenkinsJobResults = new HashMap<String, Result>();
+	processVariables.put("jenkinsJobResults", jenkinsJobResults);
+
+	Result result = null;
+	processVariables.put("jenkinsLastJobResult", result);
+
+	Logger.log("Started business process " + processId);
+
+	ksession.startProcess(processId, processVariables);
+	try {
 	    latch.await();
 	} catch (InterruptedException e) {
 	    e.printStackTrace();
 	}
-        
-        Logger.log("Completed business process " + processId);
-        
-        return true;
+
+	Logger.log("Completed business process " + processId);
+
+	return true;
     }
-    
+
     /**
-     * Not necessary (as we define some properties), but overridden for better safety.
+     * Not necessary (as we define some properties), but overridden for better
+     * safety.
      */
     @Override
     public DescriptorImpl getDescriptor() {
-        return (DescriptorImpl)super.getDescriptor();
+	return (DescriptorImpl) super.getDescriptor();
     }
 
     /**
-     * Descriptor for {@link JbpmUrlResourceBuilder}. Used as a singleton.
-     * The class is marked as public so that it can be accessed from views.
+     * Descriptor for {@link JbpmUrlResourceBuilder}. Used as a singleton. The
+     * class is marked as public so that it can be accessed from views.
      */
     @Extension
-    public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
+    public static final class DescriptorImpl extends
+	    BuildStepDescriptor<Builder> {
 
 	// global configuration fields, persisted by default
-        private boolean disableCliConsoleLogging;
-        private boolean disableWebConsoleLogging;
-	
-        /**
-         * Performs on-the-fly validation of the form field 'url'.
-         * @param value
-         * 	This parameter receives the url string.
-         * @return
-         * 	Indicates the outcome of the validation. This is sent to the browser.
-         */
-        public FormValidation doCheckUrl(@QueryParameter String value) {
-            if (value.length() == 0) {
-        	return FormValidation.error("Please specify a valid URL.");
-            }
-            try {
-        	URL url = new URL(value);
-        	URLConnection conn = url.openConnection();
-        	conn.connect();
-            } catch (MalformedURLException e) {
-        	return FormValidation.error("The URL is not in a valid form.");
-            } catch (IOException e) {
-        	return FormValidation.error("The connection could not be established to the specified URL.");
-            }
-            return FormValidation.ok();
-        }
-        
-        /**
-         * Performs on-the-fly validation of the form field 'processId'.
-         * @param value
-         * 	This parameter receives the processId string.
-         * @return
-         * 	Indicates the outcome of the validation. This is sent to the browser.
-         */
-        public FormValidation doCheckProcessId(@QueryParameter String value) {
-            if (value.length() == 0) {
-        	return FormValidation.error("Please specify a valid process ID.");
-            }
-            return FormValidation.ok();
-        }
+	private boolean disableCliConsoleLogging;
+	private boolean disableWebConsoleLogging;
 
-        /**
-         * Indicates that this builder can be used with all kinds of project types.
-         */
-        public boolean isApplicable(Class<? extends AbstractProject> aClass) {
-            return true;
-        }
+	/**
+	 * Performs on-the-fly validation of the form field 'url'.
+	 * 
+	 * @param value
+	 *            This parameter receives the url string.
+	 * @return Indicates the outcome of the validation. This is sent to the
+	 *         browser.
+	 */
+	public FormValidation doCheckUrl(@QueryParameter String value) {
+	    if (value.length() == 0) {
+		return FormValidation.error("Please specify a valid URL.");
+	    }
+	    try {
+		URL url = new URL(value);
+		URLConnection conn = url.openConnection();
+		conn.connect();
+	    } catch (MalformedURLException e) {
+		return FormValidation.error("The URL is not in a valid form.");
+	    } catch (IOException e) {
+		return FormValidation
+			.error("The connection could not be established to the specified URL.");
+	    }
+	    return FormValidation.ok();
+	}
 
-        /**
-         * This human readable name is used in the configuration screen
-         * when selecting a new build step.
-         */
-        public String getDisplayName() {
-            return "Invoke a jBPM business process";
-        }
+	/**
+	 * Performs on-the-fly validation of the form field 'processId'.
+	 * 
+	 * @param value
+	 *            This parameter receives the processId string.
+	 * @return Indicates the outcome of the validation. This is sent to the
+	 *         browser.
+	 */
+	public FormValidation doCheckProcessId(@QueryParameter String value) {
+	    if (value.length() == 0) {
+		return FormValidation
+			.error("Please specify a valid process ID.");
+	    }
+	    return FormValidation.ok();
+	}
 
-        /**
-         * Saves global configuration.
-         */
-        @Override
-        public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
-            disableCliConsoleLogging = formData.getBoolean("disableCliConsoleLogging");
-            disableWebConsoleLogging = formData.getBoolean("disableWebConsoleLogging");
-            save();
-            return super.configure(req,formData);
-        }
+	/**
+	 * Indicates that this builder can be used with all kinds of project
+	 * types.
+	 */
+	public boolean isApplicable(Class<? extends AbstractProject> aClass) {
+	    return true;
+	}
 
-        /**
-         * Used to load current value for global configuration screen.
-         */
-        public boolean disableCliConsoleLogging() {
-            return disableCliConsoleLogging;
-        }
- 
-        /**
-         * Used to load current value for global configuration screen.
-         */
-        public boolean disableWebConsoleLogging() {
-            return disableWebConsoleLogging;
-        }
-        
+	/**
+	 * This human readable name is used in the configuration screen when
+	 * selecting a new build step.
+	 */
+	public String getDisplayName() {
+	    return "Invoke a jBPM business process";
+	}
+
+	/**
+	 * Saves global configuration.
+	 */
+	@Override
+	public boolean configure(StaplerRequest req, JSONObject formData)
+		throws FormException {
+	    disableCliConsoleLogging = formData
+		    .getBoolean("disableCliConsoleLogging");
+	    disableWebConsoleLogging = formData
+		    .getBoolean("disableWebConsoleLogging");
+	    save();
+	    return super.configure(req, formData);
+	}
+
+	/**
+	 * Used to load current value for global configuration screen.
+	 */
+	public boolean disableCliConsoleLogging() {
+	    return disableCliConsoleLogging;
+	}
+
+	/**
+	 * Used to load current value for global configuration screen.
+	 */
+	public boolean disableWebConsoleLogging() {
+	    return disableWebConsoleLogging;
+	}
+
     }
-    
-}
 
+}

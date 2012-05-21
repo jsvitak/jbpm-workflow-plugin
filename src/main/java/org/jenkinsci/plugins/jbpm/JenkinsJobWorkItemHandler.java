@@ -57,17 +57,20 @@ public class JenkinsJobWorkItemHandler implements WorkItemHandler {
 
         // schedule a build and wait for completion
         WorkItemCause cause = new WorkItemCause();
+        Result result = null;
         Future future = ap.scheduleBuild2(0, cause);
         synchronized (future) {
             try {
                 future.wait();
+                result = ap.getBuilds().getLastBuild().getResult();
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                result = Result.ABORTED;
+                Logger.log("Aborted job " + jenkinsJobName + ", returned state ABORTED");
+        	Logger.log(e.toString());
             }
         }
         
         // add a Jenkins job result to the map of Jenkins job results
-        Result result = ap.getBuilds().getLastBuild().getResult();
         jenkinsJobResults.put(jenkinsJobName, result);
         
         // add a Jenkins job results map to the output variables map
@@ -78,11 +81,11 @@ public class JenkinsJobWorkItemHandler implements WorkItemHandler {
         workItemResults.put("jenkinsLastJobResultOutput", result);
         
         workItemManager.completeWorkItem(workItem.getId(), workItemResults);
-        Logger.log("Completed job " + jenkinsJobName);
+        Logger.log("Completed job " + jenkinsJobName + " with result " + result.toString());
         
     }
 
-    public void abortWorkItem(WorkItem arg0, WorkItemManager arg1) {
+    public void abortWorkItem(WorkItem workItem, WorkItemManager workItemManager) {
 
     }
 
