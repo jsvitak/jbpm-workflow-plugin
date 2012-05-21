@@ -52,7 +52,7 @@ import org.drools.builder.KnowledgeBuilderFactory;
 import org.drools.builder.ResourceType;
 import org.drools.io.ResourceFactory;
 import org.drools.runtime.StatefulKnowledgeSession;
-import org.jbpm.process.workitem.wsht.WSHumanTaskHandler;
+import org.jbpm.process.workitem.wsht.HornetQHTWorkItemHandler;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -152,7 +152,7 @@ public class JbpmUrlResourceBuilder extends Builder {
 	ksession.getWorkItemManager().registerWorkItemHandler("JenkinsJob",
 		new JenkinsJobWorkItemHandler());
 	ksession.getWorkItemManager().registerWorkItemHandler("Human Task",
-		new WSHumanTaskHandler());
+		new HornetQHTWorkItemHandler(ksession));
 
 	CountDownLatch latch = new CountDownLatch(1);
 	CompleteProcessEventListener processEventListener = new CompleteProcessEventListener(
