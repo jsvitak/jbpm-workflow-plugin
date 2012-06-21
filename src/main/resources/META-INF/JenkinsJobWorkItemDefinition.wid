@@ -7,11 +7,10 @@ import org.drools.process.core.datatype.impl.type.ObjectDataType;
     "name" : "JenkinsJob",
     "displayName" : "Jenkins Job",
     "parameters" : [
-      "jenkinsJobName" : new StringDataType(),
-      "jenkinsJobResults" : new ObjectDataType(),
+      "jobName" : new StringDataType(),
     ],
     "results" : [
-      "jenkinsJobResults" : new ObjectDataType(),
+      "jobResult" : new ObjectDataType(),
     ],
     "icon" : "icons/jenkins48.png",
   ]

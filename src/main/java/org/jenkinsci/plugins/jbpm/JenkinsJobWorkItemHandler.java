@@ -19,11 +19,18 @@
 
 package org.jenkinsci.plugins.jbpm;
 
+import hudson.model.Action;
+import hudson.model.JobProperty;
+import hudson.model.ParameterValue;
 import hudson.model.Result;
 import hudson.model.AbstractProject;
 import hudson.model.Hudson;
+import hudson.model.ParametersAction;
+import hudson.model.StringParameterValue;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 
@@ -39,49 +46,49 @@ import org.drools.runtime.process.WorkItemManager;
  * @author Jiri Svitak
  *
  */
+@SuppressWarnings("rawtypes")
 public class JenkinsJobWorkItemHandler implements WorkItemHandler {
     
     public void executeWorkItem(WorkItem workItem,
             WorkItemManager workItemManager) {
 	
 	// extract input variables
-	String jenkinsJobName = (String) workItem.getParameter("jenkinsJobNameInput");
-	Map<String,Result> jenkinsJobResults = (Map<String,Result>) workItem.getParameter("jenkinsJobResultsInput");
-        
-        Logger.log("Started job " + jenkinsJobName);
+	String jobName = (String) workItem.getParameter("jobName");
+	
+        Logger.log("Started job " + jobName);
                 
-        // start new job specified by jenkinsJobName
+        // start new job specified by jobName
         Hudson h = Hudson.getInstance();
         AbstractProject ap = h
-                .getItemByFullName(jenkinsJobName, AbstractProject.class);
+                .getItemByFullName(jobName, AbstractProject.class);
 
         // schedule a build and wait for completion
         WorkItemCause cause = new WorkItemCause();
-        Result result = null;
+
+        // scheduleBuild(5, cause, new ParametersAction(new StringParameterValue("someparameter", "somevalue")))
+        //List<ParameterValue> parameters = new ArrayList<ParameterValue>();
+        //parameters.add(new StringParameterValue("name", "value"));
+        //Action action = new ParametersAction(parameters);
+
         Future future = ap.scheduleBuild2(0, cause);
+
+        Result result = null;
         synchronized (future) {
             try {
                 future.wait();
                 result = ap.getBuilds().getLastBuild().getResult();
             } catch (InterruptedException e) {
                 result = Result.ABORTED;
-                Logger.log("Aborted job " + jenkinsJobName + ", returned state ABORTED");
+                Logger.log("Aborted job " + jobName + ", returned state ABORTED");
         	Logger.log(e.toString());
             }
         }
         
-        // add a Jenkins job result to the map of Jenkins job results
-        jenkinsJobResults.put(jenkinsJobName, result);
-        
-        // add a Jenkins job results map to the output variables map
         Map<String,Object> workItemResults = new HashMap<String,Object>();
-        workItemResults.put("jenkinsJobResultsOutput", jenkinsJobResults);
-        
-        // add/update also the last result
-        workItemResults.put("jenkinsLastJobResultOutput", result);
-        
+        workItemResults.put("jobResult", result);
         workItemManager.completeWorkItem(workItem.getId(), workItemResults);
-        Logger.log("Completed job " + jenkinsJobName + " with result " + result.toString());
+
+        Logger.log("Completed job " + jobName + " with result " + result.toString());
         
     }
 

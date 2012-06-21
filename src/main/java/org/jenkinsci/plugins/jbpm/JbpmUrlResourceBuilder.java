@@ -65,6 +65,7 @@ import org.kohsuke.stapler.StaplerRequest;
  * @author Jiri Svitak
  * 
  */
+@SuppressWarnings("rawtypes")
 public class JbpmUrlResourceBuilder extends Builder {
 
     // business process url
@@ -161,11 +162,8 @@ public class JbpmUrlResourceBuilder extends Builder {
 
 	Map<String, Object> processVariables = new HashMap<String, Object>();
 
-	Map<String, Result> jenkinsJobResults = new HashMap<String, Result>();
-	processVariables.put("jenkinsJobResults", jenkinsJobResults);
-
-	Result result = null;
-	processVariables.put("jenkinsLastJobResult", result);
+	//Result result = null;
+	//processVariables.put("result", result);
 
 	Logger.log("Started business process " + processId);
 
