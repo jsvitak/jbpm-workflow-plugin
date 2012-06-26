@@ -34,7 +34,8 @@ canvas of the Designer. Service tasks represent asynchronous launch of Jenkins j
 While drafting a business processes you may use every jBPM feature. Tasks representing Jenkins jobs
 are supplied with a job name and they return a job result. So make sure, that you have
 * declared correctly all process variables
-* set up all input and output parameters of selected service task
+* set up input and output parameters of selected service task (it is not necessary
+to declare all of them, only the ones which are really used)
 * assigned/mapped constants and process variables to parameters of selected service task
 
 Setting up a Jenkins job
@@ -42,7 +43,8 @@ Setting up a Jenkins job
 It is assumed that you already have some jobs in your Jenkins. To control their launching using
 business process you have to create a free style Jenkins job and add a new build step
 *Invoke a jBPM business process*. In this build step you have to specify a URL
-to your business process definition. To ease this, see attached help with a sample URL.
+to your business process definition. To ease this, see attached help with a sample URL, which
+points to Guvnor location at `localhost` server.
 Also it is necessary to fill in a process identifier. It is useful to adhere a convention
 like: `my.package.com.process1`.
 

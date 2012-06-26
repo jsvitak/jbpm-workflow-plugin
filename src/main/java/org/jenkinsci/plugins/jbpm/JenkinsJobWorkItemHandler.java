@@ -19,11 +19,14 @@
 
 package org.jenkinsci.plugins.jbpm;
 
+import hudson.model.ParameterValue;
 import hudson.model.Result;
 import hudson.model.AbstractProject;
 import hudson.model.Hudson;
+import hudson.model.ParametersAction;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 
@@ -60,8 +63,9 @@ public class JenkinsJobWorkItemHandler implements WorkItemHandler {
 			AbstractProject.class);
 
 		// schedule a build and wait for completion
-		WorkItemCause cause = new WorkItemCause();
-
+		@SuppressWarnings("unchecked")
+		List<ParameterValue> parameters = (List<ParameterValue>) workItem.getParameter("jobParameters");
+		
 		// scheduleBuild(5, cause, new ParametersAction(new
 		// StringParameterValue("someparameter", "somevalue")))
 		// List<ParameterValue> parameters = new
@@ -69,8 +73,12 @@ public class JenkinsJobWorkItemHandler implements WorkItemHandler {
 		// parameters.add(new StringParameterValue("name", "value"));
 		// Action action = new ParametersAction(parameters);
 
-		Future future = ap.scheduleBuild2(0, cause);
-
+		Future future; 
+		if (parameters != null)
+		    future = ap.scheduleBuild2(0, new WorkItemCause(), new ParametersAction(parameters));
+		else
+		    future = ap.scheduleBuild2(0, new WorkItemCause());
+			
 		Result result = null;
 		synchronized (future) {
 		    try {
