@@ -22,7 +22,6 @@ package org.jenkinsci.plugins.jbpm;
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.BuildListener;
-import hudson.model.Result;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.tasks.BuildStepDescriptor;
@@ -160,13 +159,9 @@ public class JbpmUrlResourceBuilder extends Builder {
 		latch);
 	ksession.addEventListener(processEventListener);
 
-	Map<String, Object> processVariables = new HashMap<String, Object>();
-
-	//Result result = null;
-	//processVariables.put("result", result);
-
 	Logger.log("Started business process " + processId);
 
+	Map<String, Object> processVariables = new HashMap<String, Object>();
 	ksession.startProcess(processId, processVariables);
 	try {
 	    latch.await();
