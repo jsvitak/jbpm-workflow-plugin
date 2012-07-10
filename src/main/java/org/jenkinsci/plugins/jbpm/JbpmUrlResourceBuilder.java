@@ -67,9 +67,14 @@ import org.kohsuke.stapler.StaplerRequest;
 @SuppressWarnings("rawtypes")
 public class JbpmUrlResourceBuilder extends Builder {
 
-    // business process url
+    /**
+     * Business process definition url
+     */
     private final String url;
-    // business process identifier
+    
+    /**
+     * Business process identifier
+     */
     private final String processId;
 
     /**
@@ -97,7 +102,7 @@ public class JbpmUrlResourceBuilder extends Builder {
     }
 
     /**
-     * Implements behavior of our build step.
+     * Implements a build step - starts jBPM engine.
      */
     @Override
     public boolean perform(AbstractBuild build, Launcher launcher,
@@ -161,8 +166,7 @@ public class JbpmUrlResourceBuilder extends Builder {
 
 	Logger.log("Started business process " + processId);
 
-	Map<String, Object> processVariables = new HashMap<String, Object>();
-	ksession.startProcess(processId, processVariables);
+	ksession.startProcess(processId);
 	try {
 	    latch.await();
 	} catch (InterruptedException e) {

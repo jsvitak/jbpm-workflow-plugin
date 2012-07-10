@@ -1,8 +1,8 @@
 jBPM 5 workflow plugin for Jenkins CI
 =====================================
-This plugin allows you to define order of launching of your Jenkins jobs
-by using [jBPM](http://www.jboss.org/jbpm) workflow.
-jBPM is a flexible lightweight business process suite based on the BPMN 2.0 standard.
+This plugin allows you to define an order of launching your Jenkins jobs
+by using a [jBPM](http://www.jboss.org/jbpm) workflow.
+The jBPM 5 is a flexible lightweight business process suite based on the BPMN 2.0 standard.
 
 Quick start
 ===========
@@ -38,7 +38,7 @@ are supplied with a job name and they return a job result. So make sure, that yo
 to declare all of them, only the ones which are really used)
 * assigned/mapped constants and process variables to parameters of selected service task
 
-Several examples are provided to see how to configure most typical use cases:
+Several examples are provided to see how to configure most typical use cases in the Designer:
 
 Setting up a job name
 ---------------------
@@ -150,5 +150,10 @@ hostname.
 
 It is also necessary to fill in a process identifier. It is useful to adhere a convention
 like: `my.package.com.process1`.
+
+TODO
+====
+* Modularization - to allow simple using of other user defined work items in their business processes
+* Persistence - to allow persisting process session info, process instance info and work item statuses on the fly
 
 

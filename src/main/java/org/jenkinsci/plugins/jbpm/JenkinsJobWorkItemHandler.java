@@ -65,13 +65,6 @@ public class JenkinsJobWorkItemHandler implements WorkItemHandler {
 		// schedule a build and wait for completion
 		@SuppressWarnings("unchecked")
 		List<ParameterValue> parameters = (List<ParameterValue>) workItem.getParameter("jobParameters");
-		
-		// scheduleBuild(5, cause, new ParametersAction(new
-		// StringParameterValue("someparameter", "somevalue")))
-		// List<ParameterValue> parameters = new
-		// ArrayList<ParameterValue>();
-		// parameters.add(new StringParameterValue("name", "value"));
-		// Action action = new ParametersAction(parameters);
 
 		Future future; 
 		if (parameters != null)
