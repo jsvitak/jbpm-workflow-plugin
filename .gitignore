@@ -23,3 +23,7 @@ bin/
 
 # jenkins hpi plugin workspace directory for debugging with hpi:run
 /work
+
+# html file for preview from README.md created by markdown
+/*.html
+
