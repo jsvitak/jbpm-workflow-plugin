@@ -13,13 +13,13 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>hpi</packaging>
     <name>jBPM workflow plugin</name>
-    <url>https://github.com/jenkinsci/jbpm-workflow-plugin</url>
-    <description>This plugin allows you to define an order of launching your Jenkins jobs by using a jBPM workflow. The jBPM 5 is a flexible lightweight business process suite based on the BPMN 2.0 standard.</description>
+    <url>https://wiki.jenkins-ci.org/display/JENKINS/jBPM+workflow+plugin</url>
+    <description>Control the flow of your Jenkins jobs with jBPM business processes.</description>
     
     <licenses>
         <license>
-            <name>GNU General Public License, Version 3</name>
-            <url>http://www.gnu.org/copyleft/gpl.html</url>
+            <name>MIT License</name>
+            <url>http://opensource.org/licenses/MIT</url>
         </license>    
     </licenses>
     
@@ -27,7 +27,7 @@
         <developer>
             <id>jsvitak</id>
             <name>Jiri Svitak</name>
-            <email>jsvitak@redhat.com</email>
+            <email>jsvitak at redhat dot com</email>
         </developer>
     </developers>
     
@@ -38,9 +38,9 @@
     </scm>
 
     <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <janino.version>2.5.15</janino.version>
         <jbpm.version>5.4.0-SNAPSHOT</jbpm.version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <dependencies>
