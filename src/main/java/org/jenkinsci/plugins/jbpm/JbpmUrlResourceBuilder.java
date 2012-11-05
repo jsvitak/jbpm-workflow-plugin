@@ -33,28 +33,14 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.Authenticator;
 import java.net.MalformedURLException;
-import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 
 import net.sf.json.JSONObject;
 
-import org.drools.KnowledgeBase;
-import org.drools.KnowledgeBaseFactory;
-import org.drools.builder.KnowledgeBuilder;
-import org.drools.builder.KnowledgeBuilderConfiguration;
-import org.drools.builder.KnowledgeBuilderFactory;
-import org.drools.builder.ResourceType;
-import org.drools.io.ResourceFactory;
 import org.drools.runtime.StatefulKnowledgeSession;
 import org.jbpm.process.workitem.wsht.HornetQHTWorkItemHandler;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -113,9 +99,7 @@ public class JbpmUrlResourceBuilder extends Builder {
     public boolean perform(AbstractBuild build, Launcher launcher,
             BuildListener listener) {
 
-        Logger.setListener(listener);
-        Logger.setCliConsoleEnabled(!getDescriptor().disableCliConsoleLogging());
-        Logger.setWebConsoleEnabled(!getDescriptor().disableWebConsoleLogging());
+        PluginLogger.setListener(listener);
 
         StatefulKnowledgeSession ksession = SessionUtil.getStatefulKnowledgeSession(SessionUtil.getKnowledgeBase(url));
 
@@ -129,7 +113,7 @@ public class JbpmUrlResourceBuilder extends Builder {
                 latch);
         ksession.addEventListener(processEventListener);
 
-        Logger.log("Started business process " + processId);
+        PluginLogger.info("Started: " + processId);
 
         ksession.startProcess(processId);
         try {
@@ -138,7 +122,7 @@ public class JbpmUrlResourceBuilder extends Builder {
             e.printStackTrace();
         }
 
-        Logger.log("Completed business process " + processId);
+        PluginLogger.info("Completed: " + processId);
 
         return true;
     }

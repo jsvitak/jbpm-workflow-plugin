@@ -24,6 +24,7 @@
 
 package org.jenkinsci.plugins.jbpm;
 
+import hudson.model.Cause;
 import hudson.model.ParameterValue;
 import hudson.model.Result;
 import hudson.model.AbstractProject;
@@ -58,7 +59,7 @@ public class JenkinsJobWorkItemHandler implements WorkItemHandler {
             public void run() {
 
                 String jobName = (String) workItem.getParameter("jobName");
-                Logger.log("Started job " + jobName);
+                PluginLogger.info("Entered: " + jobName);
 
                 Hudson h = Hudson.getInstance();
                 AbstractProject ap = h.getItemByFullName(jobName,
@@ -82,9 +83,7 @@ public class JenkinsJobWorkItemHandler implements WorkItemHandler {
                         result = ap.getBuilds().getLastBuild().getResult();
                     } catch (InterruptedException e) {
                         result = Result.ABORTED;
-                        Logger.log("Aborted job " + jobName
-                                + ", returned state ABORTED");
-                        Logger.log(e.toString());
+                        PluginLogger.error(e.toString());
                     }
                 }
 
@@ -93,7 +92,7 @@ public class JenkinsJobWorkItemHandler implements WorkItemHandler {
                 workItemManager.completeWorkItem(workItem.getId(),
                         workItemResults);
 
-                Logger.log("Completed job " + jobName + " with result "
+                PluginLogger.info("Left: " + jobName + " with result "
                         + result.toString());
 
             }
@@ -103,6 +102,15 @@ public class JenkinsJobWorkItemHandler implements WorkItemHandler {
     }
 
     public void abortWorkItem(WorkItem workItem, WorkItemManager workItemManager) {
+
+    }
+    
+    public static class WorkItemCause extends Cause {
+
+        @Override
+        public String getShortDescription() {
+            return "Invoked by jBPM workflow plugin";
+        }
 
     }
 
