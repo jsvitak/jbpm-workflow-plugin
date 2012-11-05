@@ -27,7 +27,7 @@
         <developer>
             <id>jsvitak</id>
             <name>Jiri Svitak</name>
-            <email>jsvitak at redhat dot com</email>
+            <email>jsvitak@redhat.com</email>
         </developer>
     </developers>
     
@@ -40,7 +40,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <janino.version>2.5.15</janino.version>
-        <jbpm.version>5.4.0-SNAPSHOT</jbpm.version>
+        <jbpm.version>5.4.0.CR1</jbpm.version>
     </properties>
 
     <dependencies>
@@ -58,6 +58,21 @@
             <groupId>janino</groupId>
             <artifactId>janino</artifactId>
             <version>${janino.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>jboss.jbossts</groupId>
+            <artifactId>jbossjta</artifactId>
+            <version>4.9.0.GA</version>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-entitymanager</artifactId>
+            <version>4.1.7.Final</version>    
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>4.1.7.Final</version>    
         </dependency>
     </dependencies>
 

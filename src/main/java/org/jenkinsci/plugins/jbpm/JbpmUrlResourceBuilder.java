@@ -117,47 +117,7 @@ public class JbpmUrlResourceBuilder extends Builder {
         Logger.setCliConsoleEnabled(!getDescriptor().disableCliConsoleLogging());
         Logger.setWebConsoleEnabled(!getDescriptor().disableWebConsoleLogging());
 
-        Properties droolsProperties = new Properties();
-        droolsProperties.setProperty("drools.dialect.java.compiler", "JANINO");
-        KnowledgeBuilderConfiguration config = KnowledgeBuilderFactory
-                .newKnowledgeBuilderConfiguration(droolsProperties);
-
-        KnowledgeBuilder kbuilder = KnowledgeBuilderFactory
-                .newKnowledgeBuilder(config);
-
-        Authenticator.setDefault(new Authenticator() {
-            @Override
-            protected PasswordAuthentication getPasswordAuthentication() {
-                Properties pluginProperties = new Properties();
-                try {
-                    FileInputStream in;
-                    in = new FileInputStream("plugin.properties");
-                    pluginProperties.load(in);
-                    in.close();
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                return new PasswordAuthentication(pluginProperties.getProperty(
-                        "guvnor.user", "admin"), pluginProperties.getProperty(
-                        "guvnor.password", "admin").toCharArray());
-            }
-        });
-
-        kbuilder.add(ResourceFactory.newUrlResource(url), ResourceType.BPMN2);
-        if (kbuilder.hasErrors()) {
-            Logger.log("Failed to build a business process definition "
-                    + processId + " from location " + url.toString()
-                    + " due to the following reasons:");
-            Logger.log(kbuilder.getErrors().toString());
-            return false;
-        }
-
-        KnowledgeBase kbase = KnowledgeBaseFactory.newKnowledgeBase();
-        kbase.addKnowledgePackages(kbuilder.getKnowledgePackages());
-
-        StatefulKnowledgeSession ksession = kbase.newStatefulKnowledgeSession();
+        StatefulKnowledgeSession ksession = SessionUtil.getStatefulKnowledgeSession(SessionUtil.getKnowledgeBase(url));
 
         ksession.getWorkItemManager().registerWorkItemHandler("JenkinsJob",
                 new JenkinsJobWorkItemHandler());
