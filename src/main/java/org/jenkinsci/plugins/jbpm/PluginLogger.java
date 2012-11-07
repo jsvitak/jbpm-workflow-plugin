@@ -60,5 +60,10 @@ public class PluginLogger {
         logger.error(message);
         listener.getLogger().println("ERROR: " + message);
     }
+    
+    public static synchronized void warn(String message) {
+        logger.warn(message);
+        listener.getLogger().println("WARN: " + message);
+    }
 
 }

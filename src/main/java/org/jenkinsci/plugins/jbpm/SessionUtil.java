@@ -158,17 +158,16 @@ public class SessionUtil {
 
         public static Properties getPluginProperties() {
             if (pluginProperties == null) {
-                Properties pluginProperties = new Properties();
+                pluginProperties = new Properties();
                 try {
                     InputStream in;
-                    //in = new FileInputStream("plugin.properties");
-                    in = Hudson.getInstance().getPluginManager().uberClassLoader.getResourceAsStream("plugin.properties");
+                    in = Hudson.getInstance().getPluginManager().uberClassLoader.getResourceAsStream("jbpm-workflow-plugin.properties");
                     pluginProperties.load(in);
                     in.close();
                 } catch (FileNotFoundException e) {
-                    logger.warn("Cannot find plugin.properties file: " + e.getMessage());
+                    PluginLogger.warn("Cannot find plugin.properties file: " + e.getMessage());
                 } catch (IOException e) {
-                    logger.warn("Cannot open plugin.properties file: " + e.getMessage());
+                    PluginLogger.warn("Cannot open plugin.properties file: " + e.getMessage());
                 }
             }
             return pluginProperties;
