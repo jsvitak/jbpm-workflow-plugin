@@ -40,7 +40,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <janino.version>2.5.15</janino.version>
-        <jbpm.version>5.4.0.CR1</jbpm.version>
+        <jbpm.version>5.4.0.Final</jbpm.version>
         <!-- EAP6 uses Hibernate 4.1.3 -->
         <hibernate.version>4.1.3.Final</hibernate.version>
     </properties>
