@@ -24,10 +24,10 @@
 
 package org.jenkinsci.plugins.jbpm;
 
-import hudson.model.Cause;
 import hudson.model.ParameterValue;
 import hudson.model.Result;
 import hudson.model.AbstractProject;
+import hudson.model.Cause;
 import hudson.model.Hudson;
 import hudson.model.ParametersAction;
 
@@ -39,6 +39,7 @@ import java.util.concurrent.Future;
 import org.drools.runtime.process.WorkItem;
 import org.drools.runtime.process.WorkItemHandler;
 import org.drools.runtime.process.WorkItemManager;
+import org.jbpm.process.workitem.AbstractWorkItemHandler;
 
 /**
  * 
@@ -58,9 +59,9 @@ public class JenkinsJobWorkItemHandler implements WorkItemHandler {
 
             public void run() {
 
-                String jobName = (String) workItem.getParameter("jobName");
+                String jobName = ((AbstractWorkItemHandler)workItemManager).getNodeInstance(workItem).getNodeName();
                 PluginLogger.info("Entered: " + jobName);
-
+                
                 Hudson h = Hudson.getInstance();
                 AbstractProject ap = h.getItemByFullName(jobName,
                         AbstractProject.class);
