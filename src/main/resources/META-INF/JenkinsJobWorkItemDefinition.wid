@@ -1,21 +1,17 @@
 import org.drools.process.core.datatype.impl.type.ListDataType;
 import org.drools.process.core.datatype.impl.type.ObjectDataType;
-import org.drools.process.core.datatype.impl.type.StringDataType;
-
 
 [
-
   [
     "name" : "JenkinsJob",
     "displayName" : "Jenkins Job",
     "parameters" : [
-      "jobName" : new StringDataType(),
       "jobParameters" : new ListDataType(),
     ],
     "results" : [
       "jobResult" : new ObjectDataType(),
     ],
-    "icon" : "icons/jenkins48.png",
+    "icon" : "icons/jenkins20.png",
   ]
-     
+    
 ]
