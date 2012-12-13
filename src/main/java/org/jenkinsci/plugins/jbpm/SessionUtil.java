@@ -54,11 +54,11 @@ import org.drools.persistence.jpa.JPAKnowledgeService;
 import org.drools.runtime.Environment;
 import org.drools.runtime.EnvironmentName;
 import org.drools.runtime.StatefulKnowledgeSession;
-import org.slf4j.LoggerFactory;
+import org.hibernate.Version;
 
 public class SessionUtil {
-    
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(SessionUtil.class); 
+
+    private static final String SESSION_ID_FILE = "jbpm-workflow-plugin-session-id.ser";
     
     public static KnowledgeBase getKnowledgeBase(String url) {
         Properties droolsProperties = new Properties();
@@ -73,7 +73,7 @@ public class SessionUtil {
 
         kbuilder.add(ResourceFactory.newUrlResource(url), ResourceType.BPMN2);
         if (kbuilder.hasErrors()) {
-            PluginLogger.error(kbuilder.getErrors().toString());
+            JbpmPluginLogger.error(kbuilder.getErrors().toString());
             return null;
         }
 
@@ -85,11 +85,13 @@ public class SessionUtil {
     public static StatefulKnowledgeSession getStatefulKnowledgeSession(
             KnowledgeBase kbase) {
         StatefulKnowledgeSession ksession = null;
-        if ("true".equalsIgnoreCase(PropertiesManager.getPluginProperties().getProperty(
-                "persistence.enabled", "false"))) {
-            int ksessionId = getPersistedSessionId(System.getProperty("jboss.server.temp.dir"));
+        if ("true".equalsIgnoreCase(PropertiesManager.getPluginProperties()
+                .getProperty("persistence.enabled", "false"))) {
+            int ksessionId = getPersistedSessionId(System
+                    .getProperty("jboss.server.temp.dir"));
             ksession = getPersistedSession(kbase, ksessionId);
-            persistSessionId(System.getProperty("jboss.server.temp.dir"), ksessionId);
+            persistSessionId(System.getProperty("jboss.server.temp.dir"),
+                    ksessionId);
 
         } else {
             ksession = kbase.newStatefulKnowledgeSession();
@@ -97,59 +99,84 @@ public class SessionUtil {
 
         return ksession;
     }
-    
-    private static StatefulKnowledgeSession getPersistedSession(KnowledgeBase kbase, int ksessionId) {
-        EntityManagerFactory emf = Persistence
-                .createEntityManagerFactory("org.jbpm.persistence.jpa");
-        Environment env = KnowledgeBaseFactory.newEnvironment();
-        env.set(EnvironmentName.ENTITY_MANAGER_FACTORY, emf);
-        env.set(EnvironmentName.TRANSACTION_MANAGER,
-                com.arjuna.ats.jta.TransactionManager.transactionManager());
+
+    private static StatefulKnowledgeSession getPersistedSession(
+            KnowledgeBase kbase, int ksessionId) {
+        ClassLoader current = Thread.currentThread().getContextClassLoader();
         
-        boolean createNewKnowledgeSession = true;
-        StatefulKnowledgeSession ksession = null;
+        try {
+            
+            ClassLoader sessionUtilClassLoader = SessionUtil.class.getClassLoader();
+            Thread.currentThread().setContextClassLoader(sessionUtilClassLoader);
 
-        if (ksessionId > 0) { 
-            createNewKnowledgeSession = false;
-            try {
-                logger.debug("Loading knowledge session with id " + ksessionId );
-                ksession = JPAKnowledgeService.loadStatefulKnowledgeSession(ksessionId, kbase, null, env);
-            } catch (RuntimeException e) {
-                e.printStackTrace();
-                logger.error("Error loading knowledge session : " + e.getMessage());
-                if (e instanceof IllegalStateException) {
-                    Throwable cause = ((IllegalStateException) e).getCause();
-                    if (cause instanceof InvocationTargetException) {
-                        cause = cause.getCause();
-                        String exceptionMsg = "Could not find session data for id " + ksessionId;
-                        if (cause != null && exceptionMsg.equals(cause.getMessage())) {
-                            createNewKnowledgeSession = true;
-                        } 
-                    } 
-                } 
+            JbpmPluginLogger.info("Hibernate version: " + org.hibernate.Version.getVersionString());
+            JbpmPluginLogger.info("Hibernate annotations common version: " + org.hibernate.annotations.common.Version.VERSION);
+            
+            EntityManagerFactory emf = Persistence
+                    .createEntityManagerFactory("org.jbpm.persistence.jpa");
+            Environment env = KnowledgeBaseFactory.newEnvironment();
+            env.set(EnvironmentName.ENTITY_MANAGER_FACTORY, emf);
+            env.set(EnvironmentName.TRANSACTION_MANAGER,
+                    com.arjuna.ats.jta.TransactionManager.transactionManager());
 
-                if (! createNewKnowledgeSession) { 
-                    String exceptionMsg = e.getMessage();                    
-                    if( e.getCause() != null && ! StringUtils.isEmpty(e.getCause().getMessage()) ) { 
-                        exceptionMsg = e.getCause().getMessage();
+            boolean createNewKnowledgeSession = true;
+            StatefulKnowledgeSession ksession = null;
+
+            if (ksessionId > 0) {
+                createNewKnowledgeSession = false;
+                try {
+                    JbpmPluginLogger.debug("Loading knowledge session with id "
+                            + ksessionId);
+                    ksession = JPAKnowledgeService
+                            .loadStatefulKnowledgeSession(ksessionId, kbase,
+                                    null, env);
+                } catch (RuntimeException e) {
+                    e.printStackTrace();
+                    JbpmPluginLogger.error("Error loading knowledge session : "
+                            + e.getMessage());
+                    if (e instanceof IllegalStateException) {
+                        Throwable cause = ((IllegalStateException) e)
+                                .getCause();
+                        if (cause instanceof InvocationTargetException) {
+                            cause = cause.getCause();
+                            String exceptionMsg = "Could not find session data for id "
+                                    + ksessionId;
+                            if (cause != null
+                                    && exceptionMsg.equals(cause.getMessage())) {
+                                createNewKnowledgeSession = true;
+                            }
+                        }
                     }
-                    logger.error("Error loading session data: " + exceptionMsg );
-                    throw e;
+
+                    if (!createNewKnowledgeSession) {
+                        String exceptionMsg = e.getMessage();
+                        if (e.getCause() != null
+                                && !StringUtils.isEmpty(e.getCause()
+                                        .getMessage())) {
+                            exceptionMsg = e.getCause().getMessage();
+                        }
+                        JbpmPluginLogger.error("Error loading session data: "
+                                + exceptionMsg);
+                        throw e;
+                    }
                 }
             }
+
+            if (createNewKnowledgeSession) {
+                env = KnowledgeBaseFactory.newEnvironment();
+                env.set(EnvironmentName.ENTITY_MANAGER_FACTORY, emf);
+                ksession = JPAKnowledgeService.newStatefulKnowledgeSession(
+                        kbase, null, env);
+                ksessionId = ksession.getId();
+                JbpmPluginLogger.debug("Created new knowledge session with id "
+                        + ksessionId);
+            }
+            return JPAKnowledgeService.newStatefulKnowledgeSession(kbase, null,
+                    env);
+        } finally {
+            Thread.currentThread().setContextClassLoader(current);
         }
 
-        if( createNewKnowledgeSession ) { 
-            env = KnowledgeBaseFactory.newEnvironment();
-            env.set(EnvironmentName.ENTITY_MANAGER_FACTORY, emf);
-            ksession = JPAKnowledgeService.newStatefulKnowledgeSession(kbase, null, env);
-            ksessionId = ksession.getId();
-            logger.debug("Created new knowledge session with id " + ksessionId); 
-        }
-        
-        return JPAKnowledgeService.newStatefulKnowledgeSession(kbase,
-                null, env);
-        
     }
 
     private static class PropertiesManager {
@@ -161,13 +188,16 @@ public class SessionUtil {
                 pluginProperties = new Properties();
                 try {
                     InputStream in;
-                    in = Hudson.getInstance().getPluginManager().uberClassLoader.getResourceAsStream("jbpm-workflow-plugin.properties");
+                    in = Hudson.getInstance().getPluginManager().uberClassLoader
+                            .getResourceAsStream("jbpm-workflow-plugin.properties");
                     pluginProperties.load(in);
                     in.close();
                 } catch (FileNotFoundException e) {
-                    PluginLogger.warn("Cannot find plugin.properties file: " + e.getMessage());
+                    JbpmPluginLogger.warn("Cannot find plugin.properties file: "
+                            + e.getMessage());
                 } catch (IOException e) {
-                    PluginLogger.warn("Cannot open plugin.properties file: " + e.getMessage());
+                    JbpmPluginLogger.warn("Cannot open plugin.properties file: "
+                            + e.getMessage());
                 }
             }
             return pluginProperties;
@@ -189,21 +219,22 @@ public class SessionUtil {
             return new GuvnorAuthenticator();
         }
     }
-    
+
     private static int getPersistedSessionId(String location) {
-        File sessionIdStore = new File(location + File.separator + "jbpmSessionId.ser");
+        File sessionIdStore = new File(location + File.separator
+                + SESSION_ID_FILE);
         if (sessionIdStore.exists()) {
-            Integer knownSessionId = null; 
+            Integer knownSessionId = null;
             FileInputStream fis = null;
             ObjectInputStream in = null;
             try {
                 fis = new FileInputStream(sessionIdStore);
                 in = new ObjectInputStream(fis);
-                
+
                 knownSessionId = (Integer) in.readObject();
-                
+
                 return knownSessionId.intValue();
-                
+
             } catch (Exception e) {
                 return 0;
             } finally {
@@ -220,12 +251,12 @@ public class SessionUtil {
                     }
                 }
             }
-            
+
         } else {
             return 0;
         }
     }
-    
+
     private static void persistSessionId(String location, int ksessionId) {
         if (location == null) {
             return;
@@ -233,12 +264,13 @@ public class SessionUtil {
         FileOutputStream fos = null;
         ObjectOutputStream out = null;
         try {
-            fos = new FileOutputStream(location + File.separator + "jbpmSessionId.ser");
+            fos = new FileOutputStream(location + File.separator
+                    + SESSION_ID_FILE);
             out = new ObjectOutputStream(fos);
             out.writeObject(Integer.valueOf(ksessionId));
             out.close();
         } catch (IOException ex) {
-            logger.warn("Error when persisting known session id", ex);
+            JbpmPluginLogger.warn(ex);
             ex.printStackTrace();
         } finally {
             if (fos != null) {

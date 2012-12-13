@@ -99,7 +99,7 @@ public class JbpmUrlResourceBuilder extends Builder {
     public boolean perform(AbstractBuild build, Launcher launcher,
             BuildListener listener) {
 
-        PluginLogger.setListener(listener);
+        JbpmPluginLogger.setListener(listener);
 
         StatefulKnowledgeSession ksession = SessionUtil.getStatefulKnowledgeSession(SessionUtil.getKnowledgeBase(url));
 
@@ -113,7 +113,7 @@ public class JbpmUrlResourceBuilder extends Builder {
                 latch);
         ksession.addEventListener(processEventListener);
 
-        PluginLogger.info("Started: " + processId);
+        JbpmPluginLogger.info("Started: " + processId);
 
         ksession.startProcess(processId);
         try {
@@ -122,7 +122,7 @@ public class JbpmUrlResourceBuilder extends Builder {
             e.printStackTrace();
         }
 
-        PluginLogger.info("Completed: " + processId);
+        JbpmPluginLogger.info("Completed: " + processId);
 
         return true;
     }

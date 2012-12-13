@@ -24,6 +24,9 @@
 
 package org.jenkinsci.plugins.jbpm;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,14 +39,25 @@ import hudson.model.BuildListener;
  * @author Jiri Svitak
  * 
  */
-public class PluginLogger {
+public class JbpmPluginLogger {
 
-    private static final Logger logger = LoggerFactory.getLogger(PluginLogger.class);
+    private static final Logger logger = LoggerFactory.getLogger(JbpmPluginLogger.class);
     private static BuildListener listener;
 
 
     public static synchronized void setListener(BuildListener listener) {
-        PluginLogger.listener = listener;
+        JbpmPluginLogger.listener = listener;
+    }
+    
+    private static String getStackTrace(Throwable t) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        t.printStackTrace(pw);
+        return sw.toString();
+    }
+    
+    public static synchronized void info(Throwable t) {
+        info(getStackTrace(t));
     }
 
     public static synchronized void info(String message) {
@@ -51,9 +65,17 @@ public class PluginLogger {
         listener.getLogger().println("INFO: " + message);
     }
     
+    public static synchronized void debug(Throwable t) {
+        debug(getStackTrace(t));
+    }
+    
     public static synchronized void debug(String message) {
         logger.debug(message);
         listener.getLogger().println("DEBUG: " + message);
+    }
+    
+    public static synchronized void error(Throwable t) {
+        error(getStackTrace(t));
     }
     
     public static synchronized void error(String message) {
@@ -61,9 +83,13 @@ public class PluginLogger {
         listener.getLogger().println("ERROR: " + message);
     }
     
+    public static synchronized void warn(Throwable t) {
+        warn(getStackTrace(t));
+    }
+    
     public static synchronized void warn(String message) {
         logger.warn(message);
         listener.getLogger().println("WARN: " + message);
     }
-
+    
 }

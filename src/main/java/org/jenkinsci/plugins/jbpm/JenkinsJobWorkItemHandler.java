@@ -60,7 +60,7 @@ public class JenkinsJobWorkItemHandler implements WorkItemHandler {
             public void run() {
 
                 String jobName = ((AbstractWorkItemHandler)workItemManager).getNodeInstance(workItem).getNodeName();
-                PluginLogger.info("Entered: " + jobName);
+                JbpmPluginLogger.info("Entered: " + jobName);
                 
                 Hudson h = Hudson.getInstance();
                 AbstractProject ap = h.getItemByFullName(jobName,
@@ -84,7 +84,7 @@ public class JenkinsJobWorkItemHandler implements WorkItemHandler {
                         result = ap.getBuilds().getLastBuild().getResult();
                     } catch (InterruptedException e) {
                         result = Result.ABORTED;
-                        PluginLogger.error(e.toString());
+                        JbpmPluginLogger.error(e.toString());
                     }
                 }
 
@@ -93,7 +93,7 @@ public class JenkinsJobWorkItemHandler implements WorkItemHandler {
                 workItemManager.completeWorkItem(workItem.getId(),
                         workItemResults);
 
-                PluginLogger.info("Left: " + jobName + " with result "
+                JbpmPluginLogger.info("Left: " + jobName + " with result "
                         + result.toString());
 
             }
