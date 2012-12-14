@@ -8,10 +8,11 @@
   <persistence-unit name="org.jbpm.persistence.jpa" transaction-type="JTA">
     <provider>org.hibernate.ejb.HibernatePersistence</provider>
     <jta-data-source>java:jboss/datasources/jbpmDS</jta-data-source>
-    <mapping-file>META-INF/JBPMorm.xml</mapping-file>
+    <mapping-file>META-INF/JBPMorm-JPA2.xml</mapping-file>
+    <mapping-file>META-INF/ProcessInstanceInfoMapping-JPA2.xml</mapping-file>
 
     <class>org.drools.persistence.info.SessionInfo</class>
-    <!-- <class>org.jbpm.persistence.processinstance.ProcessInstanceInfo</class>-->
+    <class>org.jbpm.persistence.processinstance.ProcessInstanceInfo</class>
     <class>org.drools.persistence.info.WorkItemInfo</class>    
     <!--  
     <class>org.jbpm.process.audit.ProcessInstanceLog</class>
@@ -23,7 +24,14 @@
       <property name="hibernate.max_fetch_depth" value="3" />
       <property name="hibernate.hbm2ddl.auto" value="update" />
       <property name="hibernate.show_sql" value="false" />
+      
+      <!--  
+      <property name="hibernate.transaction.jta.platform" value="org.hibernate.service.jta.platform.internal.JBossStandAloneJtaPlatform" />
+      -->
+      
+      <!-- eap6 complains that this property is deprecated, but it works! -->
       <property name="hibernate.transaction.manager_lookup_class" value="org.hibernate.transaction.JBossTransactionManagerLookup" />
+      
       <!-- BZ 841786: AS7/EAP 6/Hib 4 uses new (sequence) generators which seem to cause problems -->      
       <property name="hibernate.id.new_generator_mappings" value="false" />
     </properties>

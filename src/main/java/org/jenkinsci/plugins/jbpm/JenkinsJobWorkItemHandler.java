@@ -39,7 +39,6 @@ import java.util.concurrent.Future;
 import org.drools.runtime.process.WorkItem;
 import org.drools.runtime.process.WorkItemHandler;
 import org.drools.runtime.process.WorkItemManager;
-import org.jbpm.process.workitem.AbstractWorkItemHandler;
 
 /**
  * 
@@ -59,9 +58,19 @@ public class JenkinsJobWorkItemHandler implements WorkItemHandler {
 
             public void run() {
 
-                String jobName = ((AbstractWorkItemHandler)workItemManager).getNodeInstance(workItem).getNodeName();
+                /*
+                String jobName;
+                if (SessionUtil.isPersistenceEnabled()) {
+                    jobName = ((ExtendedJPAWorkItemManager) workItemManager)
+                            .getNodeInstance(workItem).getNodeName();
+                } else {
+                    jobName = ((AbstractWorkItemHandler) workItemManager)
+                            .getNodeInstance(workItem).getNodeName();
+                }
+                */
+                String jobName = WorkItemHandlerUtil.getWorkItemName(workItem);
                 JbpmPluginLogger.info("Entered: " + jobName);
-                
+
                 Hudson h = Hudson.getInstance();
                 AbstractProject ap = h.getItemByFullName(jobName,
                         AbstractProject.class);
@@ -105,7 +114,7 @@ public class JenkinsJobWorkItemHandler implements WorkItemHandler {
     public void abortWorkItem(WorkItem workItem, WorkItemManager workItemManager) {
 
     }
-    
+
     public static class WorkItemCause extends Cause {
 
         @Override

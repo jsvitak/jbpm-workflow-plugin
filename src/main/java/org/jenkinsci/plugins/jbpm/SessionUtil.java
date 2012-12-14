@@ -54,11 +54,16 @@ import org.drools.persistence.jpa.JPAKnowledgeService;
 import org.drools.runtime.Environment;
 import org.drools.runtime.EnvironmentName;
 import org.drools.runtime.StatefulKnowledgeSession;
-import org.hibernate.Version;
+import org.jbpm.persistence.JpaProcessPersistenceContextManager;
 
 public class SessionUtil {
 
     private static final String SESSION_ID_FILE = "jbpm-workflow-plugin-session-id.ser";
+    private static boolean persistenceEnabled = true;
+    
+    public static boolean isPersistenceEnabled() {
+        return persistenceEnabled;
+    }
     
     public static KnowledgeBase getKnowledgeBase(String url) {
         Properties droolsProperties = new Properties();
@@ -87,6 +92,7 @@ public class SessionUtil {
         StatefulKnowledgeSession ksession = null;
         if ("true".equalsIgnoreCase(PropertiesManager.getPluginProperties()
                 .getProperty("persistence.enabled", "false"))) {
+            persistenceEnabled = true;
             int ksessionId = getPersistedSessionId(System
                     .getProperty("jboss.server.temp.dir"));
             ksession = getPersistedSession(kbase, ksessionId);
@@ -94,6 +100,7 @@ public class SessionUtil {
                     ksessionId);
 
         } else {
+            persistenceEnabled = false;
             ksession = kbase.newStatefulKnowledgeSession();
         }
 
@@ -109,16 +116,21 @@ public class SessionUtil {
             ClassLoader sessionUtilClassLoader = SessionUtil.class.getClassLoader();
             Thread.currentThread().setContextClassLoader(sessionUtilClassLoader);
 
-            JbpmPluginLogger.info("Hibernate version: " + org.hibernate.Version.getVersionString());
-            JbpmPluginLogger.info("Hibernate annotations common version: " + org.hibernate.annotations.common.Version.VERSION);
+            //JbpmPluginLogger.info("Hibernate version: " + org.hibernate.Version.getVersionString());
+            //JbpmPluginLogger.info("Hibernate annotations common version: " + org.hibernate.annotations.common.Version.getVersionString());
             
             EntityManagerFactory emf = Persistence
                     .createEntityManagerFactory("org.jbpm.persistence.jpa");
             Environment env = KnowledgeBaseFactory.newEnvironment();
             env.set(EnvironmentName.ENTITY_MANAGER_FACTORY, emf);
+            //env.set(EnvironmentName.TRANSACTION_MANAGER,
+            //        com.arjuna.ats.jta.TransactionManager.transactionManager());
             env.set(EnvironmentName.TRANSACTION_MANAGER,
-                    com.arjuna.ats.jta.TransactionManager.transactionManager());
-
+                    PluginTransactionManager.getTransactionManager());
+            //env.set(EnvironmentName.TRANSACTION_MANAGER,
+            //        new ContainerManagedTransactionManager());
+            env.set(EnvironmentName.PERSISTENCE_CONTEXT_MANAGER, new JpaProcessPersistenceContextManager(env));
+            
             boolean createNewKnowledgeSession = true;
             StatefulKnowledgeSession ksession = null;
 
@@ -165,6 +177,14 @@ public class SessionUtil {
             if (createNewKnowledgeSession) {
                 env = KnowledgeBaseFactory.newEnvironment();
                 env.set(EnvironmentName.ENTITY_MANAGER_FACTORY, emf);
+                // hack for "Caused by: javax.naming.NameNotFoundException: java:comp/UserTransaction"?
+                //env.set(EnvironmentName.TRANSACTION_MANAGER,
+                //        com.arjuna.ats.jta.TransactionManager.transactionManager());
+                env.set(EnvironmentName.TRANSACTION_MANAGER,
+                        PluginTransactionManager.getTransactionManager());
+                //env.set(EnvironmentName.TRANSACTION_MANAGER,
+                //        new ContainerManagedTransactionManager());
+                env.set(EnvironmentName.PERSISTENCE_CONTEXT_MANAGER, new JpaProcessPersistenceContextManager(env));
                 ksession = JPAKnowledgeService.newStatefulKnowledgeSession(
                         kbase, null, env);
                 ksessionId = ksession.getId();

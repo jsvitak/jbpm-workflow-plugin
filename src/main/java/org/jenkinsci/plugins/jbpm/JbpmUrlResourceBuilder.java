@@ -103,6 +103,7 @@ public class JbpmUrlResourceBuilder extends Builder {
 
         StatefulKnowledgeSession ksession = SessionUtil.getStatefulKnowledgeSession(SessionUtil.getKnowledgeBase(url));
 
+        WorkItemHandlerUtil.setSession(ksession);
         ksession.getWorkItemManager().registerWorkItemHandler("JenkinsJob",
                 new JenkinsJobWorkItemHandler());
         ksession.getWorkItemManager().registerWorkItemHandler("Human Task",
