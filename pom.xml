@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.jenkins-ci.plugins</groupId>
 		<artifactId>plugin</artifactId>
-		<version>1.447</version>
+		<version>1.480</version>
 	</parent>
 
 	<groupId>org.jenkinsci.plugins.jbpm</groupId>
@@ -72,23 +72,16 @@
 				<version>${hibernate.commons.annotations.version}</version>
 			</dependency>
 
-			<!-- <dependency> <groupId>org.hibernate</groupId> <artifactId>hibernate-entitymanager</artifactId> 
-				<version>3.4.0.GA</version> <exclusions> <exclusion> <groupId>javassist</groupId> 
-				<artifactId>javassist</artifactId> </exclusion> </exclusions> </dependency> 
-				<dependency> <groupId>org.hibernate</groupId> <artifactId>hibernate-annotations</artifactId> 
-				<version>3.4.0.GA</version> </dependency> <dependency> <groupId>org.hibernate</groupId> 
-				<artifactId>hibernate-commons-annotations</artifactId> <version>3.1.0.GA</version> 
-				</dependency> <dependency> <groupId>org.hibernate</groupId> <artifactId>hibernate-core</artifactId> 
-				<version>3.3.2.GA</version> <exclusions> <exclusion> <groupId>javassist</groupId> 
-				<artifactId>javassist</artifactId> </exclusion> </exclusions> </dependency> 
-				<dependency> <groupId>org.hibernate.javax.persistence</groupId> <artifactId>hibernate-jpa-2.0-api</artifactId> 
-				<version>1.0.1.Final</version> </dependency> -->
-
 		</dependencies>
 	</dependencyManagement>
 
 	<dependencies>
 
+        <dependency>
+            <groupId>org.jbpm</groupId>
+            <artifactId>jbpm-bam</artifactId>
+            <version>${jbpm.version}</version>
+        </dependency>
 		<dependency>
 			<groupId>org.jbpm</groupId>
 			<artifactId>jbpm-bpmn2</artifactId>
@@ -136,16 +129,6 @@
 			<groupId>org.hibernate.common</groupId>
 			<artifactId>hibernate-commons-annotations</artifactId>
 		</dependency>
-
-		<!-- <dependency> <groupId>org.hibernate</groupId> <artifactId>hibernate-entitymanager</artifactId> 
-			<exclusions> <exclusion> <groupId>javassist</groupId> <artifactId>javassist</artifactId> 
-			</exclusion> </exclusions> </dependency> <dependency> <groupId>org.hibernate</groupId> 
-			<artifactId>hibernate-annotations</artifactId> </dependency> <dependency> 
-			<groupId>org.hibernate</groupId> <artifactId>hibernate-commons-annotations</artifactId> 
-			</dependency> <dependency> <groupId>org.hibernate</groupId> <artifactId>hibernate-core</artifactId> 
-			<exclusions> <exclusion> <groupId>javassist</groupId> <artifactId>javassist</artifactId> 
-			</exclusion> </exclusions> </dependency> <dependency> <groupId>org.hibernate.javax.persistence</groupId> 
-			<artifactId>hibernate-jpa-2.0-api</artifactId> </dependency> -->
 
 	</dependencies>
 

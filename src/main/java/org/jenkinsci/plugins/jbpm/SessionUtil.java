@@ -123,12 +123,8 @@ public class SessionUtil {
                     .createEntityManagerFactory("org.jbpm.persistence.jpa");
             Environment env = KnowledgeBaseFactory.newEnvironment();
             env.set(EnvironmentName.ENTITY_MANAGER_FACTORY, emf);
-            //env.set(EnvironmentName.TRANSACTION_MANAGER,
-            //        com.arjuna.ats.jta.TransactionManager.transactionManager());
             env.set(EnvironmentName.TRANSACTION_MANAGER,
                     PluginTransactionManager.getTransactionManager());
-            //env.set(EnvironmentName.TRANSACTION_MANAGER,
-            //        new ContainerManagedTransactionManager());
             env.set(EnvironmentName.PERSISTENCE_CONTEXT_MANAGER, new JpaProcessPersistenceContextManager(env));
             
             boolean createNewKnowledgeSession = true;
@@ -177,13 +173,8 @@ public class SessionUtil {
             if (createNewKnowledgeSession) {
                 env = KnowledgeBaseFactory.newEnvironment();
                 env.set(EnvironmentName.ENTITY_MANAGER_FACTORY, emf);
-                // hack for "Caused by: javax.naming.NameNotFoundException: java:comp/UserTransaction"?
-                //env.set(EnvironmentName.TRANSACTION_MANAGER,
-                //        com.arjuna.ats.jta.TransactionManager.transactionManager());
                 env.set(EnvironmentName.TRANSACTION_MANAGER,
                         PluginTransactionManager.getTransactionManager());
-                //env.set(EnvironmentName.TRANSACTION_MANAGER,
-                //        new ContainerManagedTransactionManager());
                 env.set(EnvironmentName.PERSISTENCE_CONTEXT_MANAGER, new JpaProcessPersistenceContextManager(env));
                 ksession = JPAKnowledgeService.newStatefulKnowledgeSession(
                         kbase, null, env);

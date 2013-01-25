@@ -21,7 +21,6 @@ public class PluginTransactionManager {
     }
     
     public static JtaTransactionManager getTransactionManager() {
-        JbpmPluginLogger.info("Creating own transaction manager!");
         return new JtaTransactionManager(findUserTransaction(), null, null);
     }
 }

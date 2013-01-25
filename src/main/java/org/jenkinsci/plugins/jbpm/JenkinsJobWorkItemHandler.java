@@ -113,7 +113,7 @@ public class JenkinsJobWorkItemHandler implements WorkItemHandler {
 
                 Map<String, Object> workItemResults = new HashMap<String, Object>();
                 workItemResults.put("jobResult", result);
-                workItemManager.completeWorkItem(workItem.getId(),
+                session.getWorkItemManager().completeWorkItem(workItem.getId(),
                         workItemResults);
 
                 JbpmPluginLogger.info("Left: " + jobName + " with result "
