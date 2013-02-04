@@ -101,13 +101,18 @@ public class JbpmUrlResourceBuilder extends Builder {
 
         JbpmPluginLogger.setListener(listener);
 
-        StatefulKnowledgeSession ksession = SessionUtil.getStatefulKnowledgeSession(SessionUtil.getKnowledgeBase(url));
-        JenkinsJobWorkItemHandler.setSession(ksession);
+        StatefulKnowledgeSession ksession = SessionUtil
+                .getStatefulKnowledgeSession(SessionUtil.getKnowledgeBase(url));
 
+        JenkinsJobWorkItemHandler.setSession(ksession);
         ksession.getWorkItemManager().registerWorkItemHandler("JenkinsJob",
                 new JenkinsJobWorkItemHandler());
+        HornetQHTWorkItemHandler humanTaskHandler = new HornetQHTWorkItemHandler(
+                ksession);
+        humanTaskHandler.setIpAddress(getDescriptor().getTaskServiceAddress());
+        humanTaskHandler.setPort(getDescriptor().getTaskServicePort());
         ksession.getWorkItemManager().registerWorkItemHandler("Human Task",
-                new HornetQHTWorkItemHandler(ksession));
+                humanTaskHandler);
 
         CountDownLatch latch = new CountDownLatch(1);
         CompleteProcessEventListener processEventListener = new CompleteProcessEventListener(
@@ -120,7 +125,17 @@ public class JbpmUrlResourceBuilder extends Builder {
         try {
             latch.await();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            JbpmPluginLogger.error(e);
+            return false;
+        } catch (IllegalStateException e) {
+            JbpmPluginLogger.error(e);
+            return false;
+        } finally {
+            try {
+                humanTaskHandler.dispose();
+            } catch (Exception e) {
+                JbpmPluginLogger.error(e);
+            }
         }
 
         JbpmPluginLogger.info("Completed: " + processId);
@@ -146,8 +161,17 @@ public class JbpmUrlResourceBuilder extends Builder {
             BuildStepDescriptor<Builder> {
 
         // global configuration fields, persisted by default
-        private boolean disableCliConsoleLogging;
-        private boolean disableWebConsoleLogging;
+        private boolean persistenceEnabled;
+        private String guvnorUserName;
+        private String guvnorPassword;
+        private String taskServiceAddress;
+        private Integer taskServicePort;
+
+        // loads plugin global configuration at Jenkins startup
+        public DescriptorImpl() {
+            super(JbpmUrlResourceBuilder.class);
+            load();
+        }
 
         /**
          * Performs on-the-fly validation of the form field 'url'.
@@ -212,10 +236,11 @@ public class JbpmUrlResourceBuilder extends Builder {
         @Override
         public boolean configure(StaplerRequest req, JSONObject formData)
                 throws FormException {
-            disableCliConsoleLogging = formData
-                    .getBoolean("disableCliConsoleLogging");
-            disableWebConsoleLogging = formData
-                    .getBoolean("disableWebConsoleLogging");
+            persistenceEnabled = formData.getBoolean("persistenceEnabled");
+            guvnorUserName = formData.getString("guvnorUserName");
+            guvnorPassword = formData.getString("guvnorPassword");
+            taskServiceAddress = formData.getString("taskServiceAddress");
+            taskServicePort = formData.getInt("taskServicePort");
             save();
             return super.configure(req, formData);
         }
@@ -223,15 +248,24 @@ public class JbpmUrlResourceBuilder extends Builder {
         /**
          * Used to load current value for global configuration screen.
          */
-        public boolean disableCliConsoleLogging() {
-            return disableCliConsoleLogging;
+        public boolean isPersistenceEnabled() {
+            return persistenceEnabled;
         }
 
-        /**
-         * Used to load current value for global configuration screen.
-         */
-        public boolean disableWebConsoleLogging() {
-            return disableWebConsoleLogging;
+        public String getGuvnorUserName() {
+            return guvnorUserName;
+        }
+
+        public String getGuvnorPassword() {
+            return guvnorPassword;
+        }
+
+        public String getTaskServiceAddress() {
+            return taskServiceAddress;
+        }
+
+        public Integer getTaskServicePort() {
+            return taskServicePort;
         }
 
     }

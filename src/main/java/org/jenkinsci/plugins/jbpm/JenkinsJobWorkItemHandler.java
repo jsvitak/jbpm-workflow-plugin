@@ -49,7 +49,6 @@ import org.drools.runtime.process.WorkItem;
 import org.drools.runtime.process.WorkItemHandler;
 import org.drools.runtime.process.WorkItemManager;
 import org.drools.runtime.process.WorkflowProcessInstance;
-import org.jbpm.process.workitem.AbstractWorkItemHandler;
 import org.jbpm.workflow.instance.node.WorkItemNodeInstance;
 
 /**
@@ -64,11 +63,11 @@ import org.jbpm.workflow.instance.node.WorkItemNodeInstance;
 public class JenkinsJobWorkItemHandler implements WorkItemHandler {
 
     private static StatefulKnowledgeSession session = null;
-    
+
     public static void setSession(StatefulKnowledgeSession ksession) {
         session = ksession;
     }
-    
+
     public void executeWorkItem(final WorkItem workItem,
             final WorkItemManager workItemManager) {
 
@@ -76,13 +75,7 @@ public class JenkinsJobWorkItemHandler implements WorkItemHandler {
 
             public void run() {
 
-                String jobName;
-                if (SessionUtil.isPersistenceEnabled()) {
-                    jobName = getNameFromPersistedSession(workItem);
-                } else {
-                    jobName = ((AbstractWorkItemHandler) workItemManager)
-                            .getNodeInstance(workItem).getNodeName();
-                }
+                String jobName = getNameFromSession(workItem);
 
                 JbpmPluginLogger.info("Entered: " + jobName);
                 Hudson h = Hudson.getInstance();
@@ -135,22 +128,29 @@ public class JenkinsJobWorkItemHandler implements WorkItemHandler {
             return "Invoked by jBPM workflow plugin";
         }
     }
-    
-    private String getNameFromPersistedSession(final WorkItem workItem) {
-        return session.execute(new GenericCommand<String> () {
+
+    private String getNameFromSession(final WorkItem workItem) {
+        return session.execute(new GenericCommand<String>() {
             private static final long serialVersionUID = 1L;
+
             public String execute(Context context) {
-                StatefulKnowledgeSession ksession = ((KnowledgeCommandContext) context).getStatefulKnowledgesession();
-                ProcessInstance processInstance = ksession.getProcessInstance(((WorkItemImpl) workItem).getProcessInstanceId());
-                NodeInstance nodeInstance = findWorkItemNodeInstance(workItem.getId(), ((WorkflowProcessInstance) processInstance).getNodeInstances());
+                StatefulKnowledgeSession ksession = ((KnowledgeCommandContext) context)
+                        .getStatefulKnowledgesession();
+                ProcessInstance processInstance = ksession
+                        .getProcessInstance(((WorkItemImpl) workItem)
+                                .getProcessInstanceId());
+                NodeInstance nodeInstance = findWorkItemNodeInstance(workItem
+                        .getId(), ((WorkflowProcessInstance) processInstance)
+                        .getNodeInstances());
                 return nodeInstance.getNodeName();
             }
-        
+
         });
     }
-    
-    private static WorkItemNodeInstance findWorkItemNodeInstance(long workItemId, Collection<NodeInstance> nodeInstances) {
-        for (NodeInstance nodeInstance: nodeInstances) {
+
+    private static WorkItemNodeInstance findWorkItemNodeInstance(
+            long workItemId, Collection<NodeInstance> nodeInstances) {
+        for (NodeInstance nodeInstance : nodeInstances) {
             if (nodeInstance instanceof WorkItemNodeInstance) {
                 WorkItemNodeInstance workItemNodeInstance = (WorkItemNodeInstance) nodeInstance;
                 if (workItemId == workItemNodeInstance.getWorkItem().getId()) {
@@ -158,7 +158,10 @@ public class JenkinsJobWorkItemHandler implements WorkItemHandler {
                 }
             }
             if (nodeInstance instanceof NodeInstanceContainer) {
-                WorkItemNodeInstance result = findWorkItemNodeInstance(workItemId, ((NodeInstanceContainer) nodeInstance).getNodeInstances());
+                WorkItemNodeInstance result = findWorkItemNodeInstance(
+                        workItemId,
+                        ((NodeInstanceContainer) nodeInstance)
+                                .getNodeInstances());
                 if (result != null) {
                     return result;
                 }

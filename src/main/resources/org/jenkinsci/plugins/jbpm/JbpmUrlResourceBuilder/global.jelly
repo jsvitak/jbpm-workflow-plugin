@@ -17,23 +17,33 @@
       is mapped to our webapp/ directory, so this is a convenient way to serve
       static resources.
     -->
-    <f:entry title="Disable CLI console logging"
-      description="Check if CLI console logging should be disabled"
-      help="/plugin/jbpm-workflow-plugin/help-globalConfig.html">
+    <f:entry title="Persistence enabled"
+      help="/plugin/jbpm-workflow-plugin/help-persistenceEnabled.html">
       <!--
         We'll have on input field. The 'descriptor' variable represents our descriptor
         object, so we use that to determine the initial value for this form.
       -->
-      <f:checkbox name="disableCliConsoleLogging" checked="${descriptor.disableCliConsoleLogging()}" />
+      <f:checkbox name="persistenceEnabled" checked="${descriptor.isPersistenceEnabled()}" />
     </f:entry>
-    <f:entry title="Disable web console logging"
-      description="Check if web console logging should be disabled"
-      help="/plugin/jbpm-workflow-plugin/help-globalConfig.html">
-      <!--
-        We'll have on input field. The 'descriptor' variable represents our descriptor
-        object, so we use that to determine the initial value for this form.
-      -->
-      <f:checkbox name="disableWebConsoleLogging" checked="${descriptor.disableWebConsoleLogging()}" />
+    <f:entry title="Guvnor user name"
+      help="/plugin/jbpm-workflow-plugin/help-guvnorUserName.html"
+      field="guvnorUserName">
+      <f:textbox default="admin" />
+    </f:entry>
+    <f:entry title="Guvnor password"
+      help="/plugin/jbpm-workflow-plugin/help-guvnorPassword.html"
+      field="guvnorPassword">
+      <f:textbox default="admin" />
+    </f:entry>
+    <f:entry title="Task service address"
+      help="/plugin/jbpm-workflow-plugin/help-taskServiceAddress.html"
+      field="taskServiceAddress">
+      <f:textbox default="localhost" />
+    </f:entry>    
+    <f:entry title="Task service port"
+      help="/plugin/jbpm-workflow-plugin/help-taskServicePort.html"
+      field="taskServicePort">
+      <f:textbox default="5153" />
     </f:entry>
   </f:section>
 </j:jelly>

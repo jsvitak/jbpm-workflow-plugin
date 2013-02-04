@@ -24,14 +24,10 @@
 
 package org.jenkinsci.plugins.jbpm;
 
-import hudson.model.Hudson;
-
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -41,6 +37,8 @@ import java.util.Properties;
 
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+
+import jenkins.model.Jenkins;
 
 import org.drools.KnowledgeBase;
 import org.drools.KnowledgeBaseFactory;
@@ -59,12 +57,29 @@ import org.jbpm.persistence.JpaProcessPersistenceContextManager;
 public class SessionUtil {
 
     private static final String SESSION_ID_FILE = "jbpm-workflow-plugin-session-id.ser";
-    private static boolean persistenceEnabled = true;
-    
-    public static boolean isPersistenceEnabled() {
-        return persistenceEnabled;
+
+    private static class GuvnorAuthenticator extends Authenticator {
+        @Override
+        protected PasswordAuthentication getPasswordAuthentication() {
+            JbpmUrlResourceBuilder.DescriptorImpl desc = (JbpmUrlResourceBuilder.DescriptorImpl) Jenkins
+                    .getInstance()
+                    .getDescriptor(
+                            org.jenkinsci.plugins.jbpm.JbpmUrlResourceBuilder.class);
+            if (desc == null) {
+                throw new IllegalStateException(
+                        "Descriptor of JbpmUrlResourceBuilder is null!");
+            }
+            JbpmPluginLogger.info("Logging into Guvnor as a user "
+                    + desc.getGuvnorUserName() + ".");
+            return new PasswordAuthentication(desc.getGuvnorUserName(), desc
+                    .getGuvnorPassword().toCharArray());
+        }
+
+        public static GuvnorAuthenticator getInstance() {
+            return new GuvnorAuthenticator();
+        }
     }
-    
+
     public static KnowledgeBase getKnowledgeBase(String url) {
         Properties droolsProperties = new Properties();
         droolsProperties.setProperty("drools.dialect.java.compiler", "JANINO");
@@ -75,6 +90,7 @@ public class SessionUtil {
                 .newKnowledgeBuilder(config);
 
         Authenticator.setDefault(GuvnorAuthenticator.getInstance());
+        JbpmPluginLogger.info("Logged into Gvunor successfully.");
 
         kbuilder.add(ResourceFactory.newUrlResource(url), ResourceType.BPMN2);
         if (kbuilder.hasErrors()) {
@@ -90,43 +106,48 @@ public class SessionUtil {
     public static StatefulKnowledgeSession getStatefulKnowledgeSession(
             KnowledgeBase kbase) {
         StatefulKnowledgeSession ksession = null;
-        if ("true".equalsIgnoreCase(PropertiesManager.getPluginProperties()
-                .getProperty("persistence.enabled", "false"))) {
-            persistenceEnabled = true;
+        JbpmUrlResourceBuilder.DescriptorImpl desc = (JbpmUrlResourceBuilder.DescriptorImpl) Jenkins
+                .getInstance()
+                .getDescriptor(
+                        org.jenkinsci.plugins.jbpm.JbpmUrlResourceBuilder.class);
+        if (desc == null) {
+            throw new IllegalStateException(
+                    "Descriptor of JbpmUrlResourceBuilder is null!");
+        }
+        if (desc.isPersistenceEnabled()) {
+            JbpmPluginLogger.info("Business process persistence is enabled.");
             int ksessionId = getPersistedSessionId(System
                     .getProperty("jboss.server.temp.dir"));
             ksession = getPersistedSession(kbase, ksessionId);
             persistSessionId(System.getProperty("jboss.server.temp.dir"),
                     ksessionId);
-
         } else {
-            persistenceEnabled = false;
+            JbpmPluginLogger.info("Business process persistence is disabled.");
             ksession = kbase.newStatefulKnowledgeSession();
         }
-
         return ksession;
     }
 
     private static StatefulKnowledgeSession getPersistedSession(
             KnowledgeBase kbase, int ksessionId) {
         ClassLoader current = Thread.currentThread().getContextClassLoader();
-        
-        try {
-            
-            ClassLoader sessionUtilClassLoader = SessionUtil.class.getClassLoader();
-            Thread.currentThread().setContextClassLoader(sessionUtilClassLoader);
 
-            //JbpmPluginLogger.info("Hibernate version: " + org.hibernate.Version.getVersionString());
-            //JbpmPluginLogger.info("Hibernate annotations common version: " + org.hibernate.annotations.common.Version.getVersionString());
-            
+        try {
+
+            ClassLoader sessionUtilClassLoader = SessionUtil.class
+                    .getClassLoader();
+            Thread.currentThread()
+                    .setContextClassLoader(sessionUtilClassLoader);
+
             EntityManagerFactory emf = Persistence
                     .createEntityManagerFactory("org.jbpm.persistence.jpa");
             Environment env = KnowledgeBaseFactory.newEnvironment();
             env.set(EnvironmentName.ENTITY_MANAGER_FACTORY, emf);
             env.set(EnvironmentName.TRANSACTION_MANAGER,
                     PluginTransactionManager.getTransactionManager());
-            env.set(EnvironmentName.PERSISTENCE_CONTEXT_MANAGER, new JpaProcessPersistenceContextManager(env));
-            
+            env.set(EnvironmentName.PERSISTENCE_CONTEXT_MANAGER,
+                    new JpaProcessPersistenceContextManager(env));
+
             boolean createNewKnowledgeSession = true;
             StatefulKnowledgeSession ksession = null;
 
@@ -175,7 +196,8 @@ public class SessionUtil {
                 env.set(EnvironmentName.ENTITY_MANAGER_FACTORY, emf);
                 env.set(EnvironmentName.TRANSACTION_MANAGER,
                         PluginTransactionManager.getTransactionManager());
-                env.set(EnvironmentName.PERSISTENCE_CONTEXT_MANAGER, new JpaProcessPersistenceContextManager(env));
+                env.set(EnvironmentName.PERSISTENCE_CONTEXT_MANAGER,
+                        new JpaProcessPersistenceContextManager(env));
                 ksession = JPAKnowledgeService.newStatefulKnowledgeSession(
                         kbase, null, env);
                 ksessionId = ksession.getId();
@@ -188,47 +210,6 @@ public class SessionUtil {
             Thread.currentThread().setContextClassLoader(current);
         }
 
-    }
-
-    private static class PropertiesManager {
-
-        private static Properties pluginProperties;
-
-        public static Properties getPluginProperties() {
-            if (pluginProperties == null) {
-                pluginProperties = new Properties();
-                try {
-                    InputStream in;
-                    in = Hudson.getInstance().getPluginManager().uberClassLoader
-                            .getResourceAsStream("jbpm-workflow-plugin.properties");
-                    pluginProperties.load(in);
-                    in.close();
-                } catch (FileNotFoundException e) {
-                    JbpmPluginLogger.warn("Cannot find plugin.properties file: "
-                            + e.getMessage());
-                } catch (IOException e) {
-                    JbpmPluginLogger.warn("Cannot open plugin.properties file: "
-                            + e.getMessage());
-                }
-            }
-            return pluginProperties;
-        }
-    }
-
-    private static class GuvnorAuthenticator extends Authenticator {
-
-        @Override
-        protected PasswordAuthentication getPasswordAuthentication() {
-            Properties pluginProperties = PropertiesManager
-                    .getPluginProperties();
-            return new PasswordAuthentication(pluginProperties.getProperty(
-                    "guvnor.user", "admin"), pluginProperties.getProperty(
-                    "guvnor.password", "admin").toCharArray());
-        }
-
-        public static GuvnorAuthenticator getInstance() {
-            return new GuvnorAuthenticator();
-        }
     }
 
     private static int getPersistedSessionId(String location) {

@@ -2,5 +2,6 @@
   This view is used to render the installed plugins page.
 -->
 <div>
-  This plugin is able to start a BPMN 2.0 business process which launches and evaluates Jenkins jobs.
+  This plugin enables you to describe your build, release and test plans to be executed by jBPM business processes based on
+  the BPMN 2.0 standard. Business processes can be used to launch and evaluate Jenkins jobs and to interact with a Jenkins user.
 </div>
