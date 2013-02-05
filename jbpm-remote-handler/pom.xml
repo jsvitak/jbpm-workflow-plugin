@@ -1,47 +1,46 @@
-                                        <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>org.jenkinsci.plugins.jbpm</groupId>
-		<artifactId>jbpm-workflow-plugin-parent</artifactId>
-		<version>0.1-SNAPSHOT</version>
-				<relativePath>..</relativePath>
-	</parent>
+  <parent>
+    <groupId>jenkins.plugins.jbpm</groupId>
+    <artifactId>jbpm-workflow-plugin-parent</artifactId>
+    <version>0.1-SNAPSHOT</version>
+    <relativePath>..</relativePath>
+  </parent>
 
-	<artifactId>jbpm-remote-handler</artifactId>
-	<packaging>jar</packaging>
-	<name>jBPM remote handler</name>
-	<url>https://wiki.jenkins-ci.org/display/JENKINS/jBPM+workflow+plugin</url>
-	<description>jBPM remote handler - Implements a jBPM work item handler, which is able to remotely start and evaluate Jenkins jobs (remote solution).</description>
+  <artifactId>jbpm-remote-handler</artifactId>
+  <packaging>jar</packaging>
+  <name>jBPM remote handler</name>
+  <url>https://wiki.jenkins-ci.org/display/JENKINS/jBPM+workflow+plugin</url>
+  <description>jBPM remote handler - Implements a jBPM work item handler, which is able to remotely start and evaluate Jenkins jobs (remote solution).</description>
 
-	<licenses>
-		<license>
-			<name>MIT License</name>
-			<url>http://opensource.org/licenses/MIT</url>
-		</license>
-	</licenses>
+  <licenses>
+    <license>
+      <name>MIT License</name>
+      <url>http://opensource.org/licenses/MIT</url>
+    </license>
+  </licenses>
 
-	<developers>
-		<developer>
-			<id>jsvitak</id>
-			<name>Jiri Svitak</name>
-			<email>jsvitak@redhat.com</email>
-		</developer>
-	</developers>
+  <developers>
+    <developer>
+      <id>jsvitak</id>
+      <name>Jiri Svitak</name>
+      <email>jsvitak@redhat.com</email>
+    </developer>
+  </developers>
 
-	<scm>
-		<connection>scm:git:git://github.com/jenkinsci/jbpm-workflow-plugin.git</connection>
-		<developerConnection>scm:git:git@github.com:jenkinsci/jbpm-workflow-plugin.git</developerConnection>
-		<url>http://github.com/jenkinsci/jbpm-workflow-plugin</url>
-	</scm>
+  <scm>
+    <connection>scm:git:git://github.com/jenkinsci/jbpm-workflow-plugin.git</connection>
+    <developerConnection>scm:git:git@github.com:jenkinsci/jbpm-workflow-plugin.git</developerConnection>
+    <url>http://github.com/jenkinsci/jbpm-workflow-plugin</url>
+  </scm>
 
-	<dependencies>
-		<dependency>
-			<groupId>org.jbpm</groupId>
-			<artifactId>jbpm-bpmn2</artifactId>
-			<version>${jbpm.version}</version>
-		</dependency>
-	</dependencies>
+  <dependencies>
+    <dependency>
+      <groupId>org.jbpm</groupId>
+      <artifactId>jbpm-bpmn2</artifactId>
+    </dependency>
+  </dependencies>
 
 </project>

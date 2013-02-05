@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package org.jenkinsci.plugins.jbpm;
+package jenkins.plugins.jbpm;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -71,7 +71,7 @@ public class SessionUtil {
             JbpmUrlResourceBuilder.DescriptorImpl desc = (JbpmUrlResourceBuilder.DescriptorImpl) Jenkins
                     .getInstance()
                     .getDescriptor(
-                            org.jenkinsci.plugins.jbpm.JbpmUrlResourceBuilder.class);
+                            jenkins.plugins.jbpm.JbpmUrlResourceBuilder.class);
             if (desc == null) {
                 throw new IllegalStateException(
                         "Descriptor of JbpmUrlResourceBuilder is null!");
@@ -116,7 +116,7 @@ public class SessionUtil {
         JbpmUrlResourceBuilder.DescriptorImpl desc = (JbpmUrlResourceBuilder.DescriptorImpl) Jenkins
                 .getInstance()
                 .getDescriptor(
-                        org.jenkinsci.plugins.jbpm.JbpmUrlResourceBuilder.class);
+                        jenkins.plugins.jbpm.JbpmUrlResourceBuilder.class);
         if (desc == null) {
             throw new IllegalStateException(
                     "Descriptor of JbpmUrlResourceBuilder is null!");

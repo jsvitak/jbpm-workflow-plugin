@@ -22,7 +22,7 @@
 * THE SOFTWARE.
 */
 
-package org.jenkinsci.plugins.jbpm;
+package jenkins.plugins.jbpm;
 
 import java.util.concurrent.CountDownLatch;
 

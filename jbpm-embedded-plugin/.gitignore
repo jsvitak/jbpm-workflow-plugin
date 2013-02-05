@@ -27,3 +27,5 @@ bin/
 # html file for preview from README.md created by markdown
 /*.html
 
+/*.releaseBackup
+

@@ -22,36 +22,38 @@
  * THE SOFTWARE.
  */
 
-package org.jenkinsci.plugins.jbpm;
+package jenkins.plugins.jbpm;
 
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.transaction.UserTransaction;
-
-import org.drools.persistence.jta.JtaTransactionManager;
+import org.drools.runtime.process.WorkItem;
+import org.drools.runtime.process.WorkItemHandler;
+import org.drools.runtime.process.WorkItemManager;
 
 /**
  * 
- * Own transaction manager to enable correct persistence on JBoss AS 7.
+ * This handler uses Jenkins CLI channel to remotely interact with a Jenkins instance.
+ * The idea is to to implement your test plan as a business process in Guvnor. Then start
+ * the business process from jbpm console. This handler needs to be supplied as a .jar file
+ * to the jbpm console to provide functionality for this new kind of business process
+ * service task. This new work item (or service task) is able to launch Jenkins job remotely,
+ * wait for the job result and send it back to the process instance running in the session
+ * of the jbpm console.
+ * 
+ * Inspired by:
+ * https://github.com/jenkinsci/cli-channel-demo
  * 
  * @author Jiri Svitak
  *
  */
-public class PluginTransactionManager {
+public class JenkinsRemoteWorkItemHandler implements WorkItemHandler {
 
-    public static final String JBOSS_USER_TRANSACTION_NAME = "java:jboss/UserTransaction";
-    
-    private static UserTransaction findUserTransaction() {
-        try {
-            InitialContext context = new InitialContext();
-            return (UserTransaction) context.lookup( JBOSS_USER_TRANSACTION_NAME );
-        } catch ( NamingException ex ) {
-            JbpmPluginLogger.debug(ex);
-            throw new IllegalStateException("Unable to find transaction: " + ex.getMessage(), ex);
-        }
+    public void executeWorkItem(WorkItem workItem, WorkItemManager manager) {
+        // TODO Auto-generated method stub
+        
     }
-    
-    public static JtaTransactionManager getTransactionManager() {
-        return new JtaTransactionManager(findUserTransaction(), null, null);
+
+    public void abortWorkItem(WorkItem workItem, WorkItemManager manager) {
+        // TODO Auto-generated method stub
+        
     }
+
 }
