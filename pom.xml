@@ -1,4 +1,4 @@
-                                        <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
@@ -9,12 +9,17 @@
 	</parent>
 
 	<groupId>org.jenkinsci.plugins.jbpm</groupId>
-	<artifactId>jbpm-workflow-plugin</artifactId>
-	<version>1.0-SNAPSHOT</version>
-	<packaging>hpi</packaging>
-	<name>jBPM workflow plugin</name>
+	<artifactId>jbpm-workflow-plugin-parent</artifactId>
+	<version>0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<name>jBPM workflow plugin parent project</name>
 	<url>https://wiki.jenkins-ci.org/display/JENKINS/jBPM+workflow+plugin</url>
 	<description>Control the flow of your Jenkins jobs with jBPM business processes.</description>
+
+	<modules>
+		<module>jbpm-embedded-plugin</module>
+		<module>jbpm-remote-handler</module>
+	</modules>
 
 	<licenses>
 		<license>
@@ -40,12 +45,14 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<janino.version>2.5.15</janino.version>
+		<jbossjta.version>4.9.0.GA</jbossjta.version>
 		<jbpm.version>5.4.0.Final</jbpm.version>
 		<!-- EAP6 uses Hibernate 4.1.3 -->
 		<hibernate.version>4.1.3.Final</hibernate.version>
 		<hibernate.validator.version>4.2.0.Final</hibernate.validator.version>
 		<hibernate.jpa.version>1.0.1.Final</hibernate.jpa.version>
 		<hibernate.commons.annotations.version>4.0.1.Final</hibernate.commons.annotations.version>
+		<slf4j.version>1.6.4</slf4j.version>
 	</properties>
 
 	<dependencyManagement>
@@ -71,16 +78,9 @@
 				<artifactId>hibernate-commons-annotations</artifactId>
 				<version>${hibernate.commons.annotations.version}</version>
 			</dependency>
-
-		</dependencies>
-	</dependencyManagement>
-
-	<dependencies>
-
         <dependency>
             <groupId>org.jbpm</groupId>
             <artifactId>jbpm-bam</artifactId>
-            <scope>compile</scope>
             <version>${jbpm.version}</version>
         </dependency>
 		<dependency>
@@ -106,32 +106,16 @@
 		<dependency>
 			<groupId>jboss.jbossts</groupId>
 			<artifactId>jbossjta</artifactId>
-			<version>4.9.0.GA</version>
+			<version>${jbossjta.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.6.4</version>
+			<version>${slf4j.version}</version>
 		</dependency>
 
-		<dependency>
-			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-entitymanager</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.hibernate.javax.persistence</groupId>
-			<artifactId>hibernate-jpa-2.0-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.hibernate.common</groupId>
-			<artifactId>hibernate-commons-annotations</artifactId>
-		</dependency>
-
-	</dependencies>
+		</dependencies>
+	</dependencyManagement>
 
 	<repositories>
 		<repository>

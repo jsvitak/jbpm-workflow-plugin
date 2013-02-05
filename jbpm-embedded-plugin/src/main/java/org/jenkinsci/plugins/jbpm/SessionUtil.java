@@ -54,6 +54,13 @@ import org.drools.runtime.EnvironmentName;
 import org.drools.runtime.StatefulKnowledgeSession;
 import org.jbpm.persistence.JpaProcessPersistenceContextManager;
 
+/**
+ * 
+ * This class handles loading business process definitions from Guvnor and manages jBPM sessions.
+ * 
+ * @author Jiri Svitak
+ *
+ */
 public class SessionUtil {
 
     private static final String SESSION_ID_FILE = "jbpm-workflow-plugin-session-id.ser";
