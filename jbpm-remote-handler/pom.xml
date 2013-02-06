@@ -4,7 +4,7 @@
   <parent>
     <groupId>jenkins.plugins.jbpm</groupId>
     <artifactId>jbpm-workflow-plugin-parent</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>0.1</version>
     <relativePath>..</relativePath>
   </parent>
 
