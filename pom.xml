@@ -16,7 +16,7 @@
   <description>Control the flow of your Jenkins jobs with jBPM business processes.</description>
 
   <modules>
-    <module>jbpm-embedded-plugin</module>
+    <module>jbpm-workflow-plugin</module>
     <module>jbpm-remote-handler</module>
   </modules>
 

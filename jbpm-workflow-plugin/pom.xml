@@ -8,11 +8,11 @@
     <relativePath>..</relativePath>
   </parent>
 
-  <artifactId>jbpm-embedded-plugin</artifactId>
+  <artifactId>jbpm-workflow-plugin</artifactId>
   <packaging>hpi</packaging>
-  <name>jBPM embedded plugin</name>
+  <name>jBPM workflow plugin</name>
   <url>https://wiki.jenkins-ci.org/display/JENKINS/jBPM+workflow+plugin</url>
-  <description>jBPM embedded plugin - implements a new Jenkins build step to invoke business process (embedded solution).</description>
+  <description>jBPM workflow plugin - implements a new Jenkins build step to invoke a business process (embedded solution).</description>
 
   <licenses>
     <license>

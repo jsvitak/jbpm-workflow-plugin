@@ -1,0 +1,7 @@
+<!--
+  This view is used to render the installed plugins page.
+-->
+<div>
+  This plugin implements a <a href="http://www.jboss.org/jbpm">jBPM</a> build step,
+  which can be used to execute a test plan described by a business process.
+</div>
