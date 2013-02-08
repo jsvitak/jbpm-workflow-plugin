@@ -9,7 +9,7 @@
 
   <groupId>jenkins.plugins.jbpm</groupId>
   <artifactId>jbpm-workflow-plugin-parent</artifactId>
-  <version>0.3-SNAPSHOT</version>
+  <version>0.3</version>
   <packaging>pom</packaging>
   <name>jBPM workflow plugin parent project</name>
   <url>https://wiki.jenkins-ci.org/display/JENKINS/jBPM+workflow+plugin</url>
