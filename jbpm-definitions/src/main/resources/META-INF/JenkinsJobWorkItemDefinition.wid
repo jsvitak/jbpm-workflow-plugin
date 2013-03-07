@@ -3,13 +3,13 @@ import org.drools.process.core.datatype.impl.type.ObjectDataType;
 
 [
   [
-    "name" : "JenkinsJob",
-    "displayName" : "Jenkins Job",
+    "name" : "Jenkins Task",
+    "displayName" : "Jenkins Task",
     "parameters" : [
-      "jobParameters" : new ListDataType(),
+      "parameters" : new ListDataType(),
     ],
     "results" : [
-      "jobResult" : new ObjectDataType(),
+      "result" : new ObjectDataType(),
     ],
     "icon" : "icons/jenkins20.png",
   ]

@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>jenkins.plugins.jbpm</groupId>
+    <artifactId>jbpm-workflow-plugin-parent</artifactId>
+    <version>0.4-SNAPSHOT</version>
+  </parent>
+  
+  <artifactId>jbpm-definitions</artifactId>
+  <packaging>jar</packaging>
+  <url>https://wiki.jenkins-ci.org/display/JENKINS/jBPM+workflow+plugin</url>
+  <name>jBPM definitions</name>
+  <description>jBPM definitions contains shared definitions, which can be deployed to Guvnor.</description>
+
+  <licenses>
+    <license>
+      <name>MIT License</name>
+      <url>http://opensource.org/licenses/MIT</url>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <id>jsvitak</id>
+      <name>Jiri Svitak</name>
+      <email>jsvitak@redhat.com</email>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:git://github.com/jenkinsci/jbpm-workflow-plugin.git</connection>
+    <developerConnection>scm:git:git@github.com:jenkinsci/jbpm-workflow-plugin.git</developerConnection>
+    <url>http://github.com/jenkinsci/jbpm-workflow-plugin</url>
+  </scm>
+
+</project>

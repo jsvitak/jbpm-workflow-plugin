@@ -25,7 +25,6 @@
 package jenkins.plugins.jbpm;
 
 import hudson.model.ParameterValue;
-import hudson.model.Result;
 import hudson.model.AbstractProject;
 import hudson.model.Cause;
 import hudson.model.Hudson;
@@ -84,7 +83,7 @@ public class JenkinsJobWorkItemHandler implements WorkItemHandler {
 
                 @SuppressWarnings("unchecked")
                 List<ParameterValue> parameters = (List<ParameterValue>) workItem
-                        .getParameter("jobParameters");
+                        .getParameter("parameters");
 
                 Future future;
                 if (parameters != null) {
@@ -93,24 +92,24 @@ public class JenkinsJobWorkItemHandler implements WorkItemHandler {
                 } else {
                     future = ap.scheduleBuild2(0, new WorkItemCause());
                 }
-                Result result = null;
+                int resultCode = Result.NULL;
                 synchronized (future) {
                     try {
                         future.wait();
-                        result = ap.getBuilds().getLastBuild().getResult();
+                        resultCode = ap.getBuilds().getLastBuild().getResult().ordinal;
                     } catch (InterruptedException e) {
-                        result = Result.ABORTED;
+                        resultCode = hudson.model.Result.ABORTED.ordinal;
                         JbpmPluginLogger.error(e.toString());
                     }
                 }
 
                 Map<String, Object> workItemResults = new HashMap<String, Object>();
-                workItemResults.put("jobResult", result);
+                workItemResults.put("result", resultCode);
                 session.getWorkItemManager().completeWorkItem(workItem.getId(),
                         workItemResults);
 
                 JbpmPluginLogger.info("Left: " + jobName + " with result "
-                        + result.toString());
+                        + Result.toString(resultCode));
 
             }
 
