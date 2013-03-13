@@ -24,11 +24,12 @@
 
 package jenkins.plugins.jbpm;
 
-import java.io.FileInputStream;
+import hudson.model.ParameterValue;
+
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import org.drools.command.Context;
 import org.drools.command.impl.GenericCommand;
@@ -50,9 +51,10 @@ import org.slf4j.LoggerFactory;
 
 /**
  * 
- * Invokes Jenkins job on a remote Jenkins server. Job name is determined from the Jenkins task node name.
- * Handler supports parameterized jobs and returns code of the remote job outcome. 
- *
+ * Invokes Jenkins job on a remote Jenkins server. Job name is determined from
+ * the Jenkins task node name. Handler supports parameterized jobs and returns
+ * code of the remote job outcome.
+ * 
  */
 public class JenkinsRemoteWorkItemHandler implements WorkItemHandler {
 
@@ -60,38 +62,58 @@ public class JenkinsRemoteWorkItemHandler implements WorkItemHandler {
             .getLogger(JenkinsRemoteWorkItemHandler.class);
 
     private StatefulKnowledgeSession session;
-    
-    public JenkinsRemoteWorkItemHandler(StatefulKnowledgeSession session) {
+    private String jenkinsUrl;
+
+    public JenkinsRemoteWorkItemHandler(StatefulKnowledgeSession session,
+            String jenkinsUrl) {
         this.session = session;
+        this.jenkinsUrl = jenkinsUrl;
     }
-    
-    public void executeWorkItem(WorkItem workItem,
-            WorkItemManager workItemManager) {
 
-        try {
-            Properties properties = new Properties();
-            properties.load(new FileInputStream(
-                    "jbpm-remote-handler.properties"));
-            String jenkinsUrl = properties.getProperty("jenkins.url", "http://localhost:8080/jenkins");
-            String jobName = getNameFromSession(workItem);
-            
-            ClientRequest request = new ClientRequest(jenkinsUrl + "/job/" + jobName + "/build");
-            request.accept("application/json");
-            ClientResponse<String> response = request.get(String.class);
-            if (response.getStatus() != 200) {
-                throw new RuntimeException(
-                        "Failed to start job on remote Jenkins server: "
-                                + response.getStatus());
+    public void executeWorkItem(final WorkItem workItem,
+            final WorkItemManager workItemManager) {
+
+        new Thread(new Runnable() {
+
+            public void run() {
+                try {
+
+                    String jobName = getNameFromSession(workItem);
+                    @SuppressWarnings("unchecked")
+                    List<ParameterValue> parameters = (List<ParameterValue>) workItem
+                            .getParameter("parameters");
+
+                    ClientRequest request;
+                    if (parameters != null) {
+                        // TODO parameters
+                        request = new ClientRequest(jenkinsUrl + "/job/"
+                                + jobName + "/build");
+                        request.accept("application/json");
+                    } else {
+                        request = new ClientRequest(jenkinsUrl + "/job/"
+                                + jobName + "/build");
+                        request.accept("application/json");
+                    }
+
+                    ClientResponse<String> response = request.get(String.class);
+                    if (response.getStatus() != 200) {
+                        throw new RuntimeException(
+                                "Failed to start job on remote Jenkins server: "
+                                        + response.getStatus());
+                    }
+
+                } catch (Exception e) {
+                    logger.error(e.toString());
+                    workItemManager.abortWorkItem(workItem.getId());
+                }
+
+                Map<String, Object> workItemResults = new HashMap<String, Object>();
+                workItemResults.put("result", Result.SUCCESS);
+                workItemManager.completeWorkItem(workItem.getId(),
+                        workItemResults);
+
             }
-
-        } catch (Exception e) {
-            logger.error(e.toString());
-            workItemManager.abortWorkItem(workItem.getId());
-        }
-
-        Map<String, Object> workItemResults = new HashMap<String, Object>();
-        workItemResults.put("result", Result.SUCCESS);
-        workItemManager.completeWorkItem(workItem.getId(), workItemResults);
+        }).start();
 
     }
 
@@ -139,5 +161,5 @@ public class JenkinsRemoteWorkItemHandler implements WorkItemHandler {
         }
         return null;
     }
-    
+
 }
